@@ -1,0 +1,228 @@
+# Agent 调度配置
+# 定义日报工作流的Agent编排
+
+agent:
+  name: DailyAIReporter
+  version: 2.0
+  
+  # 执行模式
+  execution:
+    mode: pipeline  # pipeline | event-driven
+    schedule: "0 10 * * *"  # 每天10:00
+    timezone: Asia/Shanghai
+    
+  # 并发控制
+  concurrency:
+    max_parallel_sensors: 4
+    max_parallel_queries: 3
+    retry_failed: true
+    
+  # Pipeline 阶段定义
+  stages:
+    
+    # ========== Stage 1: 数据采集 ==========
+    - name: collect
+      description: 多传感器并行采集
+      type: parallel
+      timeout: 600  # 10分钟
+      
+      tasks:
+        - name: collect_model_tech
+          sensor: model_tech
+          skills: [coze-web-search, tavily-search]
+          priority: high
+          
+        - name: collect_aigc
+          sensor: aigc_apps
+          skills: [coze-web-search, tavily-search, product-hunt]
+          priority: high
+          
+        - name: collect_avatar
+          sensor: ai_avatar
+          skills: [coze-web-search, tavily-search]
+          priority: high
+          
+        - name: collect_social
+          sensor: ai_social
+          skills: [coze-web-search, tavily-search]
+          priority: high
+          
+        - name: collect_bigtech
+          sensor: bigtech
+          skills: [coze-web-search, tavily-search, x-api]
+          priority: critical
+          
+        - name: collect_agent_tools
+          sensor: agent_tools
+          skills: [coze-web-search, github-trending, product-hunt]
+          priority: medium
+          
+        - name: collect_research
+          sensor: research
+          skills: [arxiv-api, coze-web-search]
+          priority: medium
+          
+        - name: collect_chinese
+          sensor: chinese_sources
+          skills: [coze-web-search]
+          priority: high
+      
+      # 失败处理
+      on_failure:
+        retry: 2
+        fallback: skip  # skip | abort | partial
+        
+    # ========== Stage 2: 数据清洗 ==========
+    - name: deduplicate
+      description: 去重与数据清洗
+      type: sequential
+      timeout: 120
+      
+      tasks:
+        - name: dedup_by_url
+          method: url_hash
+          
+        - name: dedup_by_title
+          method: similarity
+          threshold: 0.85
+          
+        - name: filter_by_time
+          method: time_range
+          range: 24h
+          
+        - name: prioritize
+          method: priority_score
+          factors:
+            - bigtech: 10
+            - model_tech: 8
+            - aigc_apps: 8
+            - ai_avatar: 7
+            - ai_social: 7
+            - agent_tools: 5
+            - research: 4
+            
+    # ========== Stage 3: 内容提取 ==========
+    - name: extract
+      description: 提取文章完整内容
+      type: conditional
+      timeout: 300
+      
+      condition: item.priority >= high
+      max_items: 30
+      
+      skills:
+        - coze-web-fetch
+        - extract-content
+        
+    # ========== Stage 4: 分析处理 ==========
+    - name: analyze
+      description: AI分析与洞察生成
+      type: ai_process
+      timeout: 180
+      
+      lens: dialectical
+      
+      inputs:
+        - deduplicated_items
+        - user_profile
+        - vault_insights
+        
+      outputs:
+        - top10_signals
+        - structural_conclusions
+        - vault_updates
+        
+    # ========== Stage 5: 报告生成 ==========
+    - name: report
+      description: 生成最终日报
+      type: format
+      timeout: 60
+      
+      format: markdown
+      template: daily_report
+      
+      sections:
+        - header
+        - top10_signals
+        - structural_conclusions
+        - vault_reference
+        - metadata
+        
+    # ========== Stage 6: 分发通知 ==========
+    - name: notify
+      description: 推送到飞书
+      type: webhook
+      timeout: 30
+      
+      channels:
+        - feishu
+        
+      format: markdown
+      summary: true  # 同时生成快速摘要
+
+# ========== 技能注册表 ==========
+skills_registry:
+  
+  coze-web-search:
+    type: search
+    script: skills/coze-web-search/scripts/search.ts
+    capabilities: [web_search, time_filter, site_filter]
+    rate_limit: 10/min
+    
+  coze-web-fetch:
+    type: fetch
+    script: skills/coze-web-fetch/scripts/fetch.ts
+    capabilities: [fetch_url, extract_content]
+    rate_limit: 20/min
+    
+  tavily-search:
+    type: search
+    api_endpoint: https://api.tavily.com/search
+    capabilities: [deep_search, ai_summary, news_focus]
+    rate_limit: 100/day
+    
+  brave-search:
+    type: search
+    api_endpoint: https://api.search.brave.com/res/v1/web/search
+    capabilities: [web_search, privacy_focus]
+    rate_limit: 2000/month
+    
+  github-trending:
+    type: data_source
+    api_endpoint: https://api.github.com
+    capabilities: [trending_repos, language_filter]
+    rate_limit: 5000/hour
+    
+  product-hunt:
+    type: data_source
+    api_endpoint: https://api.producthunt.com/v2/api/graphql
+    capabilities: [new_launches, topic_filter]
+    rate_limit: 100/hour
+    
+  arxiv-api:
+    type: data_source
+    api_endpoint: http://export.arxiv.org/api/query
+    capabilities: [daily_papers, category_filter]
+    rate_limit: 1/3s
+    
+  x-api:
+    type: social
+    api_endpoint: https://api.twitter.com/2
+    capabilities: [user_timeline, search]
+    rate_limit: 450/15min
+
+# ========== 状态追踪 ==========
+tracking:
+  enabled: true
+  store: daily/data/runs.db
+  metrics:
+    - execution_time
+    - success_rate
+    - data_volume
+    - insight_quality
+    
+  alerts:
+    - condition: success_rate < 0.8
+      action: notify_admin
+    - condition: execution_time > 900
+      action: log_warning

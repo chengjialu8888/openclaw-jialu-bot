@@ -1,0 +1,105 @@
+# Vault - 跨日期结构性洞察存储
+# 存储超越单日观察的长期趋势和结构性发现
+
+vault:
+  description: |
+    Vault 存储那些 transcend individual daily watches 的结构性洞察。
+    不是每日新闻的堆砌，而是跨时间维度的趋势识别。
+
+# 洞察分类体系
+categories:
+  - id: paradigm_shift
+    name: 范式转移
+    description: 行业底层逻辑的根本变化
+    examples:
+      - "AI从工具进化为代理"
+      - "模型能力趋同，差异化转向价值观"
+      - "端侧AI突破内存墙"
+
+  - id: structural_tension
+    name: 结构性张力
+    description: 表面稳定下的深层矛盾
+    examples:
+      - "用户增长 vs 付费转化"
+      - "技术领先 vs 版权风险"
+      - "全球化 vs 地缘政治"
+
+  - id: inflection_signals
+    name: 拐点信号
+    description: 量变即将引发质变的临界点
+    examples:
+      - "ChatGPT周活接近10亿"
+      - "Claude因价值观登顶App Store"
+      - "DAU破亿意味着习惯养成临界点"
+
+  - id: emergent_patterns
+    name: 涌现模式
+    description: 分散事件中显现的共同模式
+    examples:
+      - "多模态成为标配"
+      - "AI Agent接管工作流"
+      - "记忆/数据迁移成为新战场"
+
+  - id: strategic_implications
+    name: 战略启示
+    description: 对字节等公司的直接影响
+    examples:
+      - "Doubao需要验证付费转化模型"
+      - "Seedance出海面临版权硬拦截"
+      - "穿山甲需要AI Agent产品路线"
+
+# 当前追踪的结构性洞察（会随着新数据更新）
+active_insights:
+  - id: insight_001
+    title: AI助手从功能产品进化为"价值观载体"
+    category: paradigm_shift
+    first_seen: "2026-03-02"
+    signals:
+      - "Claude因拒绝Pentagon合作登顶App Store"
+      - "70万用户从ChatGPT迁移至Claude"
+    status: active
+    confidence: high
+    
+  - id: insight_002
+    title: 消费AI进入"信任经济"阶段
+    category: paradigm_shift
+    first_seen: "2026-03-02"
+    signals:
+      - "用户选择AI助手承载身份认同"
+      - "伦理立场触发大规模自发迁移"
+    status: active
+    confidence: high
+
+  - id: insight_003
+    title: DAU信仰进入黄昏期
+    category: structural_tension
+    first_seen: "2026-03-02"
+    signals:
+      - "AI企业不再单纯强调DAU"
+      - "商业化能力成新焦点"
+    status: active
+    confidence: medium
+
+  - id: insight_004
+    title: 具身智能2028年生死线
+    category: inflection_signals
+    first_seen: "2026-03-02"
+    signals:
+      - "银河通用25亿、松延动力10亿融资"
+      - "春晚效应后公众认知度提升"
+      - "制造业场景落地成竞争焦点"
+    status: emerging
+    confidence: medium
+
+# 洞察更新规则
+update_rules:
+  - 新信号支持现有洞察 → 增加evidence
+  - 新信号挑战现有洞察 → 标记为conflicting，发起重新评估
+  - 连续7天无新信号 → 标记为stale
+  - 连续30天无新信号 → 归档到historical
+
+# 报告集成
+report_integration:
+  - 每日报告中引用相关的active_insights
+  - 新洞察产生时生成special_alert
+  - 每周生成vault_summary跨趋势分析

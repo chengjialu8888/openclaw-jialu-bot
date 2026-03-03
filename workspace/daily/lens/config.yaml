@@ -1,0 +1,153 @@
+# 分析镜头配置
+# 不同分析视角，根据场景切换
+
+lenses:
+  # 唯物辩证法镜头 - 深度分析
+  - id: dialectical
+    name: 唯物辩证法分析
+    description: 找矛盾、看质变、识否定之否定
+    prompt_template: |
+      你是AI产品战略分析师，使用唯物辩证法分析以下AI行业新闻。
+      
+      ## 今日新闻数据
+      {raw_data}
+      
+      ## 分析框架
+      
+      ### 筛选标准（严格执行）
+      1. 必须是{date}当天发布
+      2. 必须有具体事实/数据/产品功能
+      3. 重点关注：AIGC、模型更新、AI分身、AI社交、AI数字人、字节竞品
+      
+      ### 唯物辩证法三维度
+      1. **对立统一（找矛盾）**：表面增长背后什么在恶化？谁受益谁受损？
+      2. **质量互变（看质变）**：这是量变还是质变前夜？离临界点还有多远？
+      3. **否定之否定（识遗留）**：热潮退去后会留下什么真实价值？
+      
+      ## 输出格式
+      
+      # 🤖 AI日报 | {date_cn}
+      
+      ## TOP 10 今日信号
+      
+      ### 1. [一句话事实]
+      **来源：** [具体来源+链接]
+      **矛盾点：** [对立面张力分析]
+      **质变信号：** [量变/质变判断]
+      **否定后留下：** [真实价值识别]
+      
+      ### 2-10. [同上格式]
+      
+      ## 今日结构性结论
+      
+      - **主要矛盾：** [今日最核心的一对对立统一]
+      - **正在质变：** [什么正在跨越临界点]
+      - **否定之否定：** [热潮退去后的真实遗产]
+      
+      ## 对字节的启示
+      [如果有直接关联的信号]
+      
+      ---
+      *分析时间：{time} | 数据来源：{sensor_count}个维度*
+    
+    use_for: [daily_report, strategic_analysis]
+    priority: 1
+
+  # 快速简报镜头
+  - id: flash_brief
+    name: 快速简报
+    description: 3-5条核心要点，适合快速浏览
+    prompt_template: |
+      快速总结今日AI行业最重要的3-5条信号：
+      
+      {raw_data}
+      
+      ## 输出格式
+      
+      ⚡ 快速简报 | {date_cn}
+      
+      1. **[信号类型]** [一句话事实] → [关键数字/数据]
+      2. **[信号类型]** [一句话事实] → [关键数字/数据]
+      3. **[信号类型]** [一句话事实] → [关键数字/数据]
+      4. [如有]
+      5. [如有]
+      
+      💡 今日关键词：{keywords}
+    
+    use_for: [mobile_notification, quick_check]
+    priority: 2
+
+  # 正反评估镜头
+  - id: dual_take
+    name: 正反评估
+    description: 对单一话题进行pro/con分析
+    prompt_template: |
+      对以下AI行业话题进行正反评估：
+      
+      话题：{topic}
+      数据：{raw_data}
+      
+      ## 输出格式
+      
+      ### ✅ 正面因素
+      - [支持性论据1]
+      - [支持性论据2]
+      
+      ### ⚠️ 反面因素
+      - [反对性论据1]
+      - [反对性论据2]
+      
+      ### 🎯 平衡判断
+      [综合分析后的立场]
+    
+    use_for: [single_topic_deep_dive, decision_support]
+    priority: 3
+
+  # 时间线追踪镜头
+  - id: timeline_trace
+    name: 时间线追踪
+    description: 重构事件发展脉络
+    prompt_template: |
+      追踪以下AI事件的时间线发展：
+      
+      事件：{event}
+      数据：{raw_data}
+      
+      ## 输出格式
+      
+      ### 事件时间线 | {event}
+      
+      - **[日期1]** [关键节点1]
+      - **[日期2]** [关键节点2]
+      - **[今日]** [最新进展]
+      
+      ### 趋势判断
+      [事件正在向哪个方向发展]
+    
+    use_for: [event_tracking, trend_analysis]
+    priority: 4
+
+# 默认镜头
+default: dialectical
+
+# KOL参考列表（重要性判断依据）
+kol_reference:
+  技术:
+    - Andrej Karpathy
+    - Yann LeCun
+    - Demis Hassabis
+  产品:
+    - Peter Yang
+    - Garry Tan
+    - Dan Shipper
+    - Greg Isenberg
+    - Justine Moore
+  投资:
+    - A16Z
+    - Sequoia Capital
+    - Greylock
+  中文:
+    - 新智元
+    - 量子位
+    - 机器之心
+    - Z Potentials

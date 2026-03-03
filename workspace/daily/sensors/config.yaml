@@ -1,0 +1,240 @@
+# AI日报传感器配置 v2
+# 整合多技能：coze-web-search, tavily, brave, exa 等
+
+sensors:
+  # ========== 技术模型层 ==========
+  - id: model_tech
+    name: 模型技术动态
+    queries:
+      - "AI model release new today {date} GPT Claude Gemini"
+      - "AI architecture update new paper today {date}"
+      - "foundation model announcement {date}"
+      - "大模型 今日发布 {date_cn}"
+    priority: high
+    skills:
+      - coze-web-search
+      - tavily-search
+    params:
+      time_range: 1d
+      count: 5
+
+  # ========== AIGC应用层 ==========
+  - id: aigc_apps
+    name: AIGC应用更新
+    queries:
+      - "AIGC content generation tool launch today {date}"
+      - "AI video generation Sora Seedance update {date}"
+      - "AI image generation Midjourney Stable Diffusion new {date}"
+      - "AIGC 新产品 今日 {date_cn}"
+    priority: high
+    skills:
+      - coze-web-search
+      - tavily-search
+      - product-hunt
+    params:
+      time_range: 1d
+      count: 5
+
+  # ========== AI分身/数字人 ==========
+  - id: ai_avatar
+    name: AI分身与数字人
+    queries:
+      - "AI avatar digital human launch today {date}"
+      - "AI clone personal AI assistant new {date}"
+      - "virtual influencer AI character today {date}"
+      - "AI数字人 虚拟人 今日动态 {date_cn}"
+    priority: high
+    skills:
+      - coze-web-search
+      - tavily-search
+    params:
+      time_range: 1d
+      count: 5
+
+  # ========== AI社交/陪伴 ==========
+  - id: ai_social
+    name: AI社交陪伴
+    queries:
+      - "AI companion chatbot launch today {date}"
+      - "AI social app feature update {date}"
+      - "character.ai replica AI friend new {date}"
+      - "AI社交 陪伴 今日 {date_cn}"
+    priority: high
+    skills:
+      - coze-web-search
+      - tavily-search
+      - product-hunt
+    params:
+      time_range: 1d
+      count: 5
+
+  # ========== 大厂竞品动态 ==========
+  - id: bigtech
+    name: 大厂AI动态
+    queries:
+      - "ByteDance Doubao AI update today {date}"
+      - "OpenAI ChatGPT new feature today {date}"
+      - "Anthropic Claude update today {date}"
+      - "Google Gemini AI new feature today {date}"
+      - "Meta AI assistant update today {date}"
+      - "字节 豆包 AI 今日 {date_cn}"
+    priority: critical
+    skills:
+      - coze-web-search
+      - tavily-search
+      - x-api  # KOL账号监控
+    params:
+      time_range: 1d
+      count: 5
+    kol_accounts:
+      - karpathy
+      - petergyang
+      - garrytan
+      - danhsipper
+      - gregisenberg
+      - justinemarie
+      - jackclarkSF
+      - goodside
+
+  # ========== Agent/工具层 ==========
+  - id: agent_tools
+    name: AI Agent与工具
+    queries:
+      - "AI Agent autonomous tool launch today {date}"
+      - "AI coding assistant new feature today {date}"
+      - "AI productivity tool update {date}"
+    priority: medium
+    skills:
+      - coze-web-search
+      - tavily-search
+      - github-trending
+      - product-hunt
+    params:
+      time_range: 1d
+      count: 5
+
+  # ========== 学术研究 ==========
+  - id: research
+    name: 学术研究动态
+    queries:
+      - "AI research paper today {date} arxiv"
+      - "machine learning breakthrough {date}"
+      - "AI论文 今日 {date_cn}"
+    priority: medium
+    skills:
+      - arxiv-api
+      - coze-web-search
+    params:
+      time_range: 1d
+      count: 3
+    categories:
+      - cs.AI
+      - cs.CL
+      - cs.CV
+      - cs.LG
+
+  # ========== 中文信源 ==========
+  - id: chinese_sources
+    name: 中文AI动态
+    queries:
+      - "AI 人工智能 今日 {date_cn}"
+      - "AIGC 新产品 {date_cn}"
+      - "字节 豆包 Seedance {date_cn}"
+    priority: high
+    skills:
+      - coze-web-search
+    sites:
+      - 36kr.com
+      - techcrunch.cn
+      - syncedreview.com
+      - jiqizhixin.com
+    params:
+      time_range: 1d
+      count: 5
+
+# ========== Skills 配置 ==========
+skills:
+  coze-web-search:
+    engine: coze-web-search
+    script: skills/coze-web-search/scripts/search.ts
+    features: [time_filter, site_filter, format_output]
+    
+  tavily-search:
+    engine: tavily
+    api_key: ${TAVILY_API_KEY}
+    features: [deep_search, news_focus, ai_summary]
+    
+  brave-search:
+    engine: brave
+    api_key: ${BRAVE_API_KEY}
+    features: [privacy_focus, fresh_results]
+    
+  exa-search:
+    engine: exa
+    api_key: ${EXA_API_KEY}
+    features: [semantic_search, neural_ranking]
+    
+  github-trending:
+    engine: github
+    features: [trending_repos, language_filter]
+    languages: [python, typescript, javascript, rust, go]
+    
+  product-hunt:
+    engine: product_hunt
+    api_key: ${PH_API_KEY}
+    features: [new_launches, ai_filter]
+    
+  arxiv-api:
+    engine: arxiv
+    features: [daily_papers, category_filter]
+    
+  x-api:
+    engine: x_twitter
+    api_key: ${X_API_KEY}
+    features: [account_monitor, search]
+    accounts:
+      - karpathy
+      - petergyang
+      - garrytan
+      - danhsipper
+      - gregisenberg
+      - justinemarie
+
+# ========== 去重与存储配置 ==========
+deduplication:
+  enabled: true
+  by_url: true
+  by_title_similarity: 0.85
+  keep_highest_priority: true
+  store_in: sqlite  # 或 json
+
+storage:
+  type: sqlite
+  path: daily/data/signex.db
+  tables:
+    - raw_items
+    - deduped_items
+    - analysis_runs
+    - vault_insights
+
+# ========== Agent 调度配置 ==========
+agent:
+  orchestration: parallel  # parallel | sequential
+  max_concurrent: 3
+  retry_policy:
+    max_retries: 2
+    backoff: exponential
+  
+  pipeline:
+    - stage: collect
+      skills: all
+      timeout: 300
+    - stage: deduplicate
+      store: sqlite
+    - stage: analyze
+      lens: dialectical
+      timeout: 120
+    - stage: report
+      format: markdown
+    - stage: vault
+      update_insights: true

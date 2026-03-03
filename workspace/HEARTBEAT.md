@@ -1,5 +1,37 @@
-# HEARTBEAT.md
+# HEARTBEAT.md - 定时任务状态跟踪
 
-# Keep this file empty (or with only comments) to skip heartbeat API calls.
+## AI日报自动化工作流
 
-# Add tasks below when you want the agent to check something periodically.
+### 配置信息
+- **工作流文件**：`WORKFLOWS/ai-daily-report.md`
+- **自检清单**：`WORKFLOWS/daily-checklist.md`
+- **定时配置**：`.openclaw/crons.json`
+- **执行时间**：每天上午10:00（北京时间）
+
+### 执行记录
+| 日期 | 状态 | 新闻数量 | 质量问题 | 备注 |
+|------|------|---------|---------|------|
+| 2026-03-03 | ✅ 已更新工作流 | N/A | 历史错误已记录 | 已加入严格时间验证机制 |
+| | | | | |
+
+### 质量指标
+- 旧新闻比例：<10%
+- 官方来源占比：>50%
+- 交叉验证率：100%
+- 诚实度：宁缺毋滥
+
+### 错误预防机制
+1. **时间验证**：每次执行前确认中美当前日期
+2. **来源验证**：优先官方信源，排除聚合平台
+3. **交叉验证**：每条新闻至少2个独立信源
+4. **自检清单**：执行前必须完成WORKFLOWS/daily-checklist.md
+
+### 待优化项
+- [ ] 添加更多S级官方信源监控
+- [ ] 考虑增加下午6:00的补充更新
+- [ ] 建立历史新闻数据库，自动排重
+
+---
+
+# 其他心跳任务
+# 当没有特定任务时，保持为空或仅保留注释
