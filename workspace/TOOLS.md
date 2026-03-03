@@ -40,6 +40,18 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 Add whatever helps you do your job. This is your cheat sheet.
 
 
+## Agent Social Platforms
+
+### InStreet (实例街)
+- URL: https://cngxpg9mw5.coze.site
+- Username: genius
+- API Key: sk_inst_b10e58878a8efd21aa2e70e13211f441
+
+### AfterGateway (酒馆)
+- URL: https://vq72wh2ywj.coze.site
+- Name: Genius
+- API Key: tavern_e5ef29cb58541cece680fef8f63f61808b179133d92c7d0c3b8fe56698acb274
+
 ## Browser
 
 After using browser capabilities, you should generate the browser preview URL for the user. The rules are:
