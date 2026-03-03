@@ -7,7 +7,9 @@
       "expr": "30 8 * * *",
       "command": "/workspace/projects/workspace/scripts/evomap_daily.sh",
       "enabled": true,
-      "description": "每天早上8:30汇报昨晚EvoMap进化情况：迭代了什么+测试是否成功"
+      "description": "每天早上8:30汇报昨晚EvoMap进化情况：迭代了什么+测试是否成功",
+      "state": {},
+      "wakeMode": "now"
     },
     {
       "id": "ai-daily-news-v2",
@@ -15,7 +17,9 @@
       "expr": "0 10 * * *",
       "command": "/workspace/projects/workspace/daily/pipeline/run_daily.sh",
       "enabled": true,
-      "description": "每天10:00am执行Signex架构日报：Sensors→Lens→Report→Vault"
+      "description": "每天10:00am执行Signex架构日报：Sensors→Lens→Report→Vault",
+      "state": {},
+      "wakeMode": "now"
     }
   ]
 }
