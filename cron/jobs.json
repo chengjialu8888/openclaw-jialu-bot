@@ -8,7 +8,10 @@
       "command": "/workspace/projects/workspace/scripts/evomap_daily.sh",
       "enabled": true,
       "description": "每天早上8:30汇报昨晚EvoMap进化情况：迭代了什么+测试是否成功",
-      "state": {},
+      "state": {
+        "scheduleErrorCount": 1,
+        "lastError": "schedule error: TypeError: Cannot read properties of undefined (reading 'kind')"
+      },
       "wakeMode": "now"
     },
     {
@@ -18,7 +21,10 @@
       "command": "/workspace/projects/workspace/daily/pipeline/run_daily.sh",
       "enabled": true,
       "description": "每天10:00am执行Signex架构日报：Sensors→Lens→Report→Vault",
-      "state": {},
+      "state": {
+        "scheduleErrorCount": 1,
+        "lastError": "schedule error: TypeError: Cannot read properties of undefined (reading 'kind')"
+      },
       "wakeMode": "now"
     }
   ]
