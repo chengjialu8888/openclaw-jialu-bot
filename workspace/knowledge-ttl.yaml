@@ -1,0 +1,194 @@
+# Knowledge TTL (Time To Live) 配置
+
+> "变化不是线性的，有阈值。量变积累到临界点，突然质变。"
+
+---
+
+## TTL 规则定义
+
+### 时效性分级
+
+```yaml
+knowledge_types:
+  breaking_news:
+    description: "突发新闻、热点事件"
+    ttl_days: 7
+    degrade_to: "background"
+    action_after_ttl: "archive"
+    
+  product_update:
+    description: "产品功能更新、版本发布"
+    ttl_days: 30
+    degrade_to: "reference"
+    action_after_ttl: "review"
+    
+  competitor_intel:
+    description: "竞品动态、市场动向"
+    ttl_days: 30
+    degrade_to: "background"
+    action_after_ttl: "review"
+    
+  strategic_judgment:
+    description: "战略判断、趋势分析"
+    ttl_days: 90
+    degrade_to: "hypothesis"
+    action_after_ttl: "validate"
+    
+  user_preference:
+    description: "用户偏好、工作习惯"
+    ttl_days: 365
+    degrade_to: "confirm"
+    action_after_ttl: "ask_user"
+    
+  meta_rule:
+    description: "元规则、学习方法论"
+    ttl_days: 0  # 永不过期
+    degrade_to: null
+    action_after_ttl: "none"
+```
+
+### 状态流转
+
+```
+active → [TTL到期] → degraded → [触发条件] → archived/updated/superseded
+```
+
+**状态说明:**
+- **active:** 当前有效，正常引用
+- **degraded:** 时效性降低，引用时标注"[背景信息]"
+- **archived:** 已归档，不主动引用，但可检索
+- **superseded:** 已被新信息替代，标记废弃原因
+
+---
+
+## 自动化工作流
+
+### Daily Check (每日检查)
+
+**执行时间:** 每天早上 6:00 (Jialu 时区)
+**触发条件:** Heartbeat 间隔
+
+**检查清单:**
+1. 扫描所有带时间戳的知识条目
+2. 识别即将到期（3天内）和已到期条目
+3. 生成 TTL 报告:
+   - 今日到期: X条
+   - 即将到期: Y条
+   - 建议回顾: Z条
+
+### Weekly Review (每周回顾)
+
+**执行时间:** 每周日早上
+**回顾范围:**
+- 过去7天到期的战略判断 (strategic_judgment)
+- 验证准确率: 当时的判断是否还成立
+- 更新置信度: confirmed / partially correct / wrong
+
+**输出:**
+```markdown
+## TTL Review [日期]
+
+### 到期知识回顾
+1. [知识ID] - 判断: [正确/部分正确/错误] - 更新为: [新状态]
+
+### 模式总结
+- 高频变化领域: [列表]
+- 稳定判断: [列表]
+- 建议调整 TTL: [建议]
+```
+
+### Auto-Archive (自动归档)
+
+**归档标准:**
+- breaking_news 超过 30 天
+- 用户明确标记"过时"
+- 被新规则明确替代 (superseded)
+
+**归档位置:** `workspace/archive/YYYY-MM/`
+
+---
+
+## 用户交互规则
+
+### 当知识即将到期
+
+**系统提示:**
+> "关于 [主题] 的信息将在 3 天后过期。是否需要：
+> 1. 更新信息
+> 2. 延长期限
+> 3. 标记为永久有效
+> 4. 忽略"
+
+### 当用户说"过时了"
+
+**立即执行:**
+1. 标记原知识: `status: superseded`
+2. 记录原因: `superseded_reason: "用户明确标记过时"`
+3. 询问: "当前情况是什么？" → 记录为新知识
+4. 更新 learnings.md (Rule-005: 知识更替的记录方式)
+
+### 主动清理
+
+用户可以说：
+- "清理一下旧信息"
+- "把超过一个月的忘掉"
+- "归档 [主题] 相关内容"
+
+**系统响应:**
+- 列出符合条件的条目
+- 用户确认后批量操作
+- 生成操作日志
+
+---
+
+## 与 Learnings 的关联
+
+**Rule-005:** TTL 触发回顾时，如果发现某类知识频繁过期，记录到 learnings.md
+
+> 示例: "竞品动态 TTL 30天，但平均7天就要更新。建议调整为 14 天。"
+
+**Rule-006:** 战略判断过期时，必须分析判断准确与否，提炼判断模式
+
+> 准确 → 强化判断逻辑
+> 错误 → 分析偏差原因，更新判断框架
+
+---
+
+## 配置示例
+
+```yaml
+# 示例：某条知识的 TTL 标记
+entry:
+  id: "news-001"
+  content: "OpenAI 发布 GPT-5"
+  created_at: "2026-03-01"
+  type: "breaking_news"
+  ttl_days: 7
+  status: "active"
+  tags: ["OpenAI", "模型发布"]
+  
+  # 到期后自动执行
+  on_expire:
+    action: "archive"
+    notify_user: false
+    update_learnings: true
+```
+
+---
+
+## 统计指标
+
+**监控维度:**
+- 平均知识生命周期
+- 各类知识的实际 TTL vs 配置 TTL
+- 用户主动更新频率
+- 归档知识检索频率 (评估归档价值)
+
+**目标:**
+- 减少 80% 的"过时信息"引用
+- 提高战略判断的验证闭环率至 100%
+
+---
+
+*系统版本: v1.0*
+*最后更新: 2026-03-03*
