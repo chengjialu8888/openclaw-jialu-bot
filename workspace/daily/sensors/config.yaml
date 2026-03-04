@@ -1,5 +1,5 @@
-# AI日报传感器配置 v2
-# 整合多技能：coze-web-search, tavily, brave, exa 等
+# AI日报传感器配置 v3
+# 整合 Multiple Search Engine Skill
 
 sensors:
   # ========== 技术模型层 ==========
@@ -11,12 +11,8 @@ sensors:
       - "foundation model announcement {date}"
       - "大模型 今日发布 {date_cn}"
     priority: high
-    skills:
-      - coze-web-search
-      - tavily-search
-    params:
-      time_range: 1d
-      count: 5
+    skill: multiple-search-engine
+    engines: [tavily, brave, coze]
 
   # ========== AIGC应用层 ==========
   - id: aigc_apps
@@ -27,13 +23,8 @@ sensors:
       - "AI image generation Midjourney Stable Diffusion new {date}"
       - "AIGC 新产品 今日 {date_cn}"
     priority: high
-    skills:
-      - coze-web-search
-      - tavily-search
-      - product-hunt
-    params:
-      time_range: 1d
-      count: 5
+    skill: multiple-search-engine
+    engines: [tavily, brave, coze, product-hunt]
 
   # ========== AI分身/数字人 ==========
   - id: ai_avatar
@@ -44,12 +35,8 @@ sensors:
       - "virtual influencer AI character today {date}"
       - "AI数字人 虚拟人 今日动态 {date_cn}"
     priority: high
-    skills:
-      - coze-web-search
-      - tavily-search
-    params:
-      time_range: 1d
-      count: 5
+    skill: multiple-search-engine
+    engines: [tavily, brave, coze]
 
   # ========== AI社交/陪伴 ==========
   - id: ai_social
@@ -60,13 +47,8 @@ sensors:
       - "character.ai replica AI friend new {date}"
       - "AI社交 陪伴 今日 {date_cn}"
     priority: high
-    skills:
-      - coze-web-search
-      - tavily-search
-      - product-hunt
-    params:
-      time_range: 1d
-      count: 5
+    skill: multiple-search-engine
+    engines: [tavily, brave, coze, product-hunt]
 
   # ========== 大厂竞品动态 ==========
   - id: bigtech
@@ -79,13 +61,8 @@ sensors:
       - "Meta AI assistant update today {date}"
       - "字节 豆包 AI 今日 {date_cn}"
     priority: critical
-    skills:
-      - coze-web-search
-      - tavily-search
-      - x-api  # KOL账号监控
-    params:
-      time_range: 1d
-      count: 5
+    skill: multiple-search-engine
+    engines: [tavily, brave, coze, x-api]
     kol_accounts:
       - karpathy
       - petergyang
@@ -93,8 +70,6 @@ sensors:
       - danhsipper
       - gregisenberg
       - justinemarie
-      - jackclarkSF
-      - goodside
 
   # ========== Agent/工具层 ==========
   - id: agent_tools
@@ -104,14 +79,8 @@ sensors:
       - "AI coding assistant new feature today {date}"
       - "AI productivity tool update {date}"
     priority: medium
-    skills:
-      - coze-web-search
-      - tavily-search
-      - github-trending
-      - product-hunt
-    params:
-      time_range: 1d
-      count: 5
+    skill: multiple-search-engine
+    engines: [tavily, brave, coze, github-trending]
 
   # ========== 学术研究 ==========
   - id: research
@@ -121,12 +90,8 @@ sensors:
       - "machine learning breakthrough {date}"
       - "AI论文 今日 {date_cn}"
     priority: medium
-    skills:
-      - arxiv-api
-      - coze-web-search
-    params:
-      time_range: 1d
-      count: 3
+    skill: multiple-search-engine
+    engines: [arxiv-api, coze]
     categories:
       - cs.AI
       - cs.CL
@@ -141,64 +106,57 @@ sensors:
       - "AIGC 新产品 {date_cn}"
       - "字节 豆包 Seedance {date_cn}"
     priority: high
-    skills:
-      - coze-web-search
+    skill: multiple-search-engine
+    engines: [coze]
     sites:
       - 36kr.com
       - techcrunch.cn
       - syncedreview.com
       - jiqizhixin.com
-    params:
-      time_range: 1d
-      count: 5
 
-# ========== Skills 配置 ==========
-skills:
-  coze-web-search:
-    engine: coze-web-search
-    script: skills/coze-web-search/scripts/search.ts
-    features: [time_filter, site_filter, format_output]
+# ========== Multiple Search Engine 配置 ==========
+multiple_search_engine:
+  default_engines: [tavily, brave, coze]
+  default_count: 5
+  deduplicate: true
+  
+  engine_config:
+    tavily:
+      priority: 1
+      strength: ai_summary
+      api_key: ${TAVILY_API_KEY}
     
-  tavily-search:
-    engine: tavily
-    api_key: ${TAVILY_API_KEY}
-    features: [deep_search, news_focus, ai_summary]
+    brave:
+      priority: 2
+      strength: privacy_freshness
+      api_key: ${BRAVE_API_KEY}
     
-  brave-search:
-    engine: brave
-    api_key: ${BRAVE_API_KEY}
-    features: [privacy_focus, fresh_results]
+    exa:
+      priority: 3
+      strength: semantic_search
+      api_key: ${EXA_API_KEY}
     
-  exa-search:
-    engine: exa
-    api_key: ${EXA_API_KEY}
-    features: [semantic_search, neural_ranking]
+    coze:
+      priority: 4
+      strength: broad_coverage
     
-  github-trending:
-    engine: github
-    features: [trending_repos, language_filter]
-    languages: [python, typescript, javascript, rust, go]
+    product-hunt:
+      priority: 5
+      strength: new_launches
+      api_key: ${PH_API_KEY}
     
-  product-hunt:
-    engine: product_hunt
-    api_key: ${PH_API_KEY}
-    features: [new_launches, ai_filter]
+    github-trending:
+      priority: 6
+      strength: open_source
     
-  arxiv-api:
-    engine: arxiv
-    features: [daily_papers, category_filter]
+    arxiv-api:
+      priority: 7
+      strength: academic_papers
     
-  x-api:
-    engine: x_twitter
-    api_key: ${X_API_KEY}
-    features: [account_monitor, search]
-    accounts:
-      - karpathy
-      - petergyang
-      - garrytan
-      - danhsipper
-      - gregisenberg
-      - justinemarie
+    x-api:
+      priority: 8
+      strength: social_kol
+      api_key: ${X_API_KEY}
 
 # ========== 去重与存储配置 ==========
 deduplication:
@@ -206,7 +164,7 @@ deduplication:
   by_url: true
   by_title_similarity: 0.85
   keep_highest_priority: true
-  store_in: sqlite  # 或 json
+  boost_multisource: true  # 多个引擎找到的结果加分
 
 storage:
   type: sqlite
@@ -216,25 +174,3 @@ storage:
     - deduped_items
     - analysis_runs
     - vault_insights
-
-# ========== Agent 调度配置 ==========
-agent:
-  orchestration: parallel  # parallel | sequential
-  max_concurrent: 3
-  retry_policy:
-    max_retries: 2
-    backoff: exponential
-  
-  pipeline:
-    - stage: collect
-      skills: all
-      timeout: 300
-    - stage: deduplicate
-      store: sqlite
-    - stage: analyze
-      lens: dialectical
-      timeout: 120
-    - stage: report
-      format: markdown
-    - stage: vault
-      update_insights: true

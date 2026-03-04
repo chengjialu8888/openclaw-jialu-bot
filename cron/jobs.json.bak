@@ -5,9 +5,9 @@
       "id": "evomap-daily-evolution",
       "name": "EvoMap每日进化+早餐汇报",
       "expr": "30 8 * * *",
-      "command": "/workspace/projects/workspace/scripts/evomap_daily.sh",
+      "command": "/workspace/projects/workspace/scripts/evomap_daily.sh && /workspace/projects/workspace/scripts/cron_push_helper.sh evomap",
       "enabled": true,
-      "description": "每天早上8:30汇报昨晚EvoMap进化情况：迭代了什么+测试是否成功",
+      "description": "每天早上8:30汇报昨晚EvoMap进化情况，执行完成后推送结果",
       "state": {},
       "wakeMode": "now"
     },
@@ -15,9 +15,19 @@
       "id": "ai-daily-news-v2",
       "name": "AI日报-Signex架构版",
       "expr": "0 10 * * *",
-      "command": "/workspace/projects/workspace/daily/pipeline/run_daily.sh",
+      "command": "/workspace/projects/workspace/daily/pipeline/run_daily.sh && /workspace/projects/workspace/scripts/cron_push_helper.sh daily",
       "enabled": true,
-      "description": "每天10:00am执行Signex架构日报：Sensors→Lens→Report→Vault",
+      "description": "每天10:00am执行Signex架构日报，执行完成后推送数据采集结果",
+      "state": {},
+      "wakeMode": "now"
+    },
+    {
+      "id": "token-daily-report",
+      "name": "Token消耗日报",
+      "expr": "59 23 * * *",
+      "command": "/workspace/projects/workspace/scripts/daily_token_report.sh",
+      "enabled": true,
+      "description": "每天23:59统计Token消耗并推送（需配置OpenClaw API获取实际数据）",
       "state": {},
       "wakeMode": "now"
     }

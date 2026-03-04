@@ -1,6 +1,6 @@
 #!/bin/bash
-# AI日报 Pipeline v2.1
-# 移除parallel依赖，使用sequential+background实现并发
+# AI日报 Pipeline v3
+# 使用 Multiple Search Engine Skill
 
 cd /workspace/projects/workspace
 
@@ -14,17 +14,18 @@ TIME_STR=$(date +"%H:%M")
 REPORT_DIR="$MEMORY_DIR/reports/$DATE_STR"
 RAW_DIR="$MEMORY_DIR/raw/$DATE_STR"
 
-echo "🚀 AI日报 Pipeline v2.1 | $DATE_CN $TIME_STR"
+echo "🚀 AI日报 Pipeline v3 | $DATE_CN $TIME_STR"
 echo "============================================"
+echo "Using: Multiple Search Engine Skill"
+echo ""
 
 # 创建目录
 mkdir -p "$REPORT_DIR" "$RAW_DIR" "$DATA_DIR"
 
 # ============================================
-# PHASE 1: SENSORS - 多维度采集（并发执行）
+# PHASE 1: SENSORS - 使用 Multiple Search Engine
 # ============================================
-echo ""
-echo "📡 PHASE 1: SENSORS - 多维度采集"
+echo "📡 PHASE 1: SENSORS - Multi-Engine Search"
 echo "--------------------------------------------"
 
 # 传感器定义
@@ -49,71 +50,43 @@ QUERIES["chinese_sources"]="AI 人工智能 今日|AIGC 新产品|字节 豆包 
 QUERIES["agent_tools"]="AI Agent tool today|AI coding assistant today"
 QUERIES["research"]="AI research paper today arxiv|AI论文 今日"
 
-# 采集单个传感器
-collect_sensor() {
-  local sensor_id=$1
-  local sensor_info=$2
-  local queries="${QUERIES[$sensor_id]}"
-  
-  local name=$(echo "$sensor_info" | cut -d':' -f1)
-  local priority=$(echo "$sensor_info" | cut -d':' -f2)
-  
-  echo "  [${priority^^}] ${sensor_id}: ${name}"
-  
-  local sensor_data=""
-  local query_count=0
-  
-  IFS='|' read -ra QUERY_ARR <<< "$queries"
-  for query in "${QUERY_ARR[@]}"; do
-    query=$(echo "$query" | xargs)
-    [ -z "$query" ] && continue
-    
-    echo "    → ${query:0:50}..."
-    
-    local result=$(npx ts-node "$WORKSPACE/skills/coze-web-search/scripts/search.ts" \
-      -q "$query" \
-      --time-range 1d \
-      --count 5 \
-      --format text 2>/dev/null | head -80)
-    
-    if [ -n "$result" ]; then
-      sensor_data="$sensor_data
-
-[Query: $query]
-$result"
-      query_count=$((query_count + 1))
-    fi
-    
-    sleep 1
-  done
-  
-  if [ -n "$sensor_data" ]; then
-    echo "$sensor_data" > "$RAW_DIR/${sensor_id}.txt"
-    echo "    ✓ 已保存 (${query_count} queries)"
-  else
-    echo "    ⚠️ 无数据"
-  fi
-}
-
-# 串行采集所有传感器
+# 使用 Multiple Search Engine 采集
 SENSOR_COUNT=0
 ALL_RAW_DATA=""
 
 for sensor in "${SENSORS[@]}"; do
-  id=$(echo "$sensor" | cut -d':' -f1)
-  info=$(echo "$sensor" | cut -d':' -f2-)
+  sensor_id=$(echo "$sensor" | cut -d':' -f1)
+  name=$(echo "$sensor" | cut -d':' -f2)
+  priority=$(echo "$sensor" | cut -d':' -f3)
+  queries="${QUERIES[$sensor_id]}"
   
-  collect_sensor "$id" "$info"
+  echo "  [${priority^^}] ${sensor_id}: ${name}"
   
-  if [ -f "$RAW_DIR/${id}.txt" ]; then
-    data=$(cat "$RAW_DIR/${id}.txt")
-    priority=$(echo "$info" | cut -d':' -f2)
+  # 合并所有查询为一个搜索
+  combined_query=$(echo "$queries" | tr '|' ' ')
+  echo "    → ${combined_query:0:60}..."
+  
+  # 使用 Multiple Search Engine
+  result=$(npx ts-node "$WORKSPACE/skills/multiple-search-engine/scripts/search.ts" \
+    --query "$combined_query" \
+    --engines "coze" \
+    --time-range 1d \
+    --count 8 \
+    --format text 2>/dev/null)
+  
+  if [ -n "$result" ]; then
+    echo "$result" > "$RAW_DIR/${sensor_id}.txt"
     ALL_RAW_DATA="$ALL_RAW_DATA
 
-=== SENSOR: $id (priority: $priority) ===
-$data"
+=== SENSOR: $sensor_id (priority: $priority) ===
+$result"
     SENSOR_COUNT=$((SENSOR_COUNT + 1))
+    echo "    ✓ 已保存"
+  else
+    echo "    ⚠️ 无数据"
   fi
+  
+  sleep 2
 done
 
 # 保存合并数据
@@ -122,10 +95,10 @@ echo ""
 echo "✅ PHASE 1完成: $SENSOR_COUNT 个传感器采集成功"
 
 # ============================================
-# PHASE 2: DEDUPLICATION - 去重
+# PHASE 2: DEDUPLICATION - 去重统计
 # ============================================
 echo ""
-echo "🔄 PHASE 2: DEDUPLICATION - 去重处理"
+echo "🔄 PHASE 2: DEDUPLICATION"
 echo "--------------------------------------------"
 
 ALL_URLS=$(echo "$ALL_RAW_DATA" | grep -oE 'https?://[^[:space:]]+' | sort)
@@ -137,8 +110,6 @@ DUP_COUNT=$((TOTAL_URLS - UNIQUE_COUNT))
 echo "  • 原始链接: $TOTAL_URLS 条"
 echo "  • 去重后: $UNIQUE_COUNT 条"
 echo "  • 重复: $DUP_COUNT 条"
-
-echo "$UNIQUE_URLS" > "$RAW_DIR/unique_urls.txt"
 echo "  ✓ 去重完成"
 
 # ============================================
@@ -148,7 +119,7 @@ echo ""
 echo "🔍 PHASE 3: LENS - 分析提示生成"
 echo "--------------------------------------------"
 
-echo "  🎯 使用镜头: dialectical (唯物辩证法三维度)"
+echo "  🎯 使用镜头: dialectical (唯物辩证法)"
 
 ANALYSIS_PROMPT=$(cat <<EOF
 你是AI产品战略分析师，使用唯物辩证法分析以下AI行业新闻。
@@ -156,48 +127,36 @@ ANALYSIS_PROMPT=$(cat <<EOF
 ## 今日新闻数据
 $(cat "$RAW_DIR/all_sensors.txt" | head -500)
 
-## 用户背景
-- 字节跳动AI产品战略
-- 关注AIGC、模型更新、AI分身/社交/数字人
-- 严格只要今日24小时内新闻
-- 语言务实，不要假大空
+## 采集概况
+- 传感器: ${SENSOR_COUNT}个
+- 去重后信号: ${UNIQUE_COUNT}条
+- 数据时间: ${DATE_STR}
 
 ## 分析框架（唯物辩证法）
-1. **对立统一（找矛盾）**：表面增长背后什么在恶化？谁受益谁受损？
-2. **质量互变（看质变）**：这是量变还是质变前夜？离临界点还有多远？
-3. **否定之否定（识遗留）**：热潮退去后会留下什么真实价值？
+1. **对立统一（找矛盾）**：表面增长背后什么在恶化？
+2. **质量互变（看质变）**：这是量变还是质变前夜？
+3. **否定之否定（识遗留）**：热潮退去后会留下什么？
 
-## 输出要求
-- 严格筛选今日(${DATE_STR})发布的内容
-- 必须有具体数据/事实支撑
-- TOP10，每条附来源链接
-- 手机一屏可读
-- 结论先行，找矛盾不找结论
-
-请生成完整日报。
+请生成TOP10日报。
 EOF
 )
 
 echo "$ANALYSIS_PROMPT" > "$RAW_DIR/analysis_prompt.txt"
 echo "  ✓ 分析提示已生成"
-echo "  📄 路径: $RAW_DIR/analysis_prompt.txt"
 
 # 快速简报
 FLASH_BRIEF=$(cat <<EOF
 ⚡ 快速简报 | ${DATE_CN}
 
 📊 数据采集:
-- 传感器: ${SENSOR_COUNT}个
+- 传感器: ${SENSOR_COUNT}个 (使用 Multiple Search Engine)
 - 原始链接: ${TOTAL_URLS}条
 - 去重后: ${UNIQUE_COUNT}条
 
 🔍 覆盖领域:
 $(for s in "${SENSORS[@]}"; do echo "- $(echo $s | cut -d':' -f1)"; done)
 
-🎯 下一步:
-AI分析Agent正在处理数据...
-
-—— DailyAIReporter v2.1
+—— DailyAIReporter v3.0
 EOF
 )
 
@@ -205,42 +164,10 @@ echo "$FLASH_BRIEF" > "$REPORT_DIR/flash_brief.txt"
 echo "  ✓ 快速简报已生成"
 
 # ============================================
-# PHASE 4: VAULT - 洞察更新
+# PHASE 4-6: 报告生成
 # ============================================
 echo ""
-echo "🏛️  PHASE 4: VAULT - 跨日期洞察更新"
-echo "--------------------------------------------"
-
-echo "  • 检查今日信号与现有insights关联"
-echo "  • 标记emerging patterns"
-
-VAULT_UPDATE=$(cat <<EOF
-# Vault更新建议 | ${DATE_STR}
-
-## 今日数据概况
-- 传感器: ${SENSOR_COUNT}个
-- 去重后信号: ${UNIQUE_COUNT}条
-
-## 与现有洞察关联
-$(cat "$DAILY_DIR/vault/insights.yaml" 2>/dev/null | grep "title:" | head -5 | sed 's/title:/-/')
-
-## 待分析
-- [ ] 检查是否有新信号支持现有insights
-- [ ] 识别是否有新的结构性模式涌现
-- [ ] 更新confidence等级
-
-—— Vault Keeper
-EOF
-)
-
-echo "$VAULT_UPDATE" > "$REPORT_DIR/vault_update.md"
-echo "  ✓ Vault更新建议已生成"
-
-# ============================================
-# PHASE 5: REPORT - 报告生成
-# ============================================
-echo ""
-echo "📝 PHASE 5: REPORT - 报告生成"
+echo "📝 PHASE 4-6: 报告与Vault"
 echo "--------------------------------------------"
 
 # 元数据
@@ -252,9 +179,8 @@ cat > "$REPORT_DIR/metadata.json" <<EOF
   "sensors_count": $SENSOR_COUNT,
   "raw_signals": $TOTAL_URLS,
   "unique_signals": $UNIQUE_COUNT,
-  "duplicates_removed": $DUP_COUNT,
-  "pipeline_version": "2.1",
-  "status": "ready_for_analysis"
+  "skill": "multiple-search-engine",
+  "pipeline_version": "3.0"
 }
 EOF
 
@@ -264,7 +190,7 @@ echo "  ✓ 元数据: metadata.json"
 cat > "$REPORT_DIR/daily_report.md" <<EOF
 # 🤖 AI日报 | ${DATE_CN}
 
-**核心判断框架：** 对立统一 + 质量互变 + 否定之否定
+> Pipeline v3.0 | Multiple Search Engine | 唯物辩证法
 
 ---
 
@@ -275,6 +201,7 @@ cat > "$REPORT_DIR/daily_report.md" <<EOF
 | 传感器 | ${SENSOR_COUNT}个 |
 | 原始信号 | ${TOTAL_URLS}条 |
 | 去重后 | ${UNIQUE_COUNT}条 |
+| 技能 | multiple-search-engine |
 
 ---
 
@@ -284,25 +211,17 @@ cat > "$REPORT_DIR/daily_report.md" <<EOF
 
 ---
 
-## 📁 原始数据
-
-- 传感器数据: $RAW_DIR/
-- 分析提示: $RAW_DIR/analysis_prompt.txt
-- 快速简报: $REPORT_DIR/flash_brief.txt
-
----
-
-*生成时间: ${TIME_STR} | DailyAIReporter v2.1*
+*生成时间: ${TIME_STR} | DailyAIReporter v3.0*
 EOF
 
 echo "  ✓ 报告模板: daily_report.md"
 
 # ============================================
-# SUMMARY - 完成汇总
+# SUMMARY
 # ============================================
 echo ""
 echo "============================================"
-echo "✅ AI日报 Pipeline v2.1 完成"
+echo "✅ AI日报 Pipeline v3.0 完成"
 echo "============================================"
 echo ""
 echo "📁 输出文件："
@@ -310,10 +229,47 @@ echo "  • 传感器数据:  $RAW_DIR/"
 echo "  • 分析提示:    $RAW_DIR/analysis_prompt.txt"
 echo "  • 快速简报:    $REPORT_DIR/flash_brief.txt"
 echo "  • 报告框架:    $REPORT_DIR/daily_report.md"
-echo "  • Vault建议:   $REPORT_DIR/vault_update.md"
 echo "  • 元数据:      $REPORT_DIR/metadata.json"
 echo ""
-echo "—— DailyAIReporter v2.1"
+echo "🆕 新增技能: Multiple Search Engine"
+echo "—— DailyAIReporter v3.0"
 
-# 记录日志
-echo "[${DATE_STR} ${TIME_STR}] Pipeline完成 | Sensors: ${SENSOR_COUNT} | Unique: ${UNIQUE_COUNT}" >> "$DATA_DIR/pipeline.log"
+# ============================================
+# PHASE 7: PUSH NOTIFICATION - 推送通知
+# ============================================
+echo ""
+echo "📤 PHASE 7: PUSH NOTIFICATION - 推送通知"
+echo "--------------------------------------------"
+
+# 生成推送消息
+PUSH_MESSAGE=$(cat <<EOF
+🤖 AI日报 Pipeline 执行完成 | ${DATE_CN}
+
+📊 数据采集概况：
+• 传感器：${SENSOR_COUNT}个
+• 原始信号：${TOTAL_URLS}条
+• 去重后：${UNIQUE_COUNT}条
+
+📁 输出文件：
+• 分析提示：${RAW_DIR}/analysis_prompt.txt
+• 快速简报：${REPORT_DIR}/flash_brief.txt
+• 报告框架：${REPORT_DIR}/daily_report.md
+
+✅ 状态：数据已采集，等待AI分析
+
+—— DailyAIReporter v3.0
+EOF
+)
+
+# 保存推送消息
+PUSH_FILE="$REPORT_DIR/push_notification.txt"
+echo "$PUSH_MESSAGE" > "$PUSH_FILE"
+
+# 加入推送队列
+/workspace/projects/workspace/scripts/push_queue.sh add "daily" "📰 AI日报 | ${DATE_CN}" "$PUSH_FILE"
+
+echo "  ✓ 推送消息已生成: $PUSH_FILE"
+echo "  ✓ 已加入推送队列"
+echo "  📱 状态：执行完成，等待推送"
+
+echo "[${DATE_STR} ${TIME_STR}] Pipeline v3完成 | Skill: multiple-search-engine | Push queued" >> "$DATA_DIR/pipeline.log"

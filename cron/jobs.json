@@ -5,27 +5,43 @@
       "id": "evomap-daily-evolution",
       "name": "EvoMap每日进化+早餐汇报",
       "expr": "30 8 * * *",
-      "command": "/workspace/projects/workspace/scripts/evomap_daily.sh",
       "enabled": true,
-      "description": "每天早上8:30汇报昨晚EvoMap进化情况：迭代了什么+测试是否成功",
-      "state": {
-        "scheduleErrorCount": 1,
-        "lastError": "schedule error: TypeError: Cannot read properties of undefined (reading 'kind')"
+      "description": "每天早上8:30汇报昨晚EvoMap进化情况，执行完成后推送结果",
+      "state": {},
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "/workspace/projects/workspace/scripts/evomap_daily.sh && /workspace/projects/workspace/scripts/cron_push_helper.sh evomap"
       },
-      "wakeMode": "now"
+      "sessionTarget": "main"
     },
     {
       "id": "ai-daily-news-v2",
       "name": "AI日报-Signex架构版",
       "expr": "0 10 * * *",
-      "command": "/workspace/projects/workspace/daily/pipeline/run_daily.sh",
       "enabled": true,
-      "description": "每天10:00am执行Signex架构日报：Sensors→Lens→Report→Vault",
-      "state": {
-        "scheduleErrorCount": 1,
-        "lastError": "schedule error: TypeError: Cannot read properties of undefined (reading 'kind')"
+      "description": "每天10:00am执行Signex架构日报，执行完成后推送数据采集结果",
+      "state": {},
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "/workspace/projects/workspace/daily/pipeline/run_daily.sh && /workspace/projects/workspace/scripts/cron_push_helper.sh daily"
       },
-      "wakeMode": "now"
+      "sessionTarget": "main"
+    },
+    {
+      "id": "token-daily-report",
+      "name": "Token消耗日报",
+      "expr": "59 23 * * *",
+      "enabled": true,
+      "description": "每天23:59统计Token消耗并推送（需配置OpenClaw API获取实际数据）",
+      "state": {},
+      "wakeMode": "now",
+      "payload": {
+        "kind": "systemEvent",
+        "text": "/workspace/projects/workspace/scripts/daily_token_report.sh"
+      },
+      "sessionTarget": "main"
     }
   ]
 }

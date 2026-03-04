@@ -124,7 +124,18 @@ EOF
 # 记录到日志
 echo "$BREAKFAST_REPORT" >> "$LOG_FILE"
 
-# 7. 输出汇报（会被消息工具捕获发送）
+# 7. 输出汇报
 echo "$BREAKFAST_REPORT"
 
+# 8. 推送到飞书
+echo "[$DATE_STR $TIME_STR] 正在推送到飞书..." >> "$LOG_FILE"
+
+# 保存报告到文件供推送使用
+REPORT_FILE="$MEMORY_DIR/evomap_report_$(date +%Y%m%d).txt"
+echo "$BREAKFAST_REPORT" > "$REPORT_FILE"
+
+# 加入推送队列
+/workspace/projects/workspace/scripts/push_queue.sh add "evomap" "🌅 早餐汇报 | $DATE_STR" "$REPORT_FILE"
+
+echo "[$DATE_STR $TIME_STR] 早餐汇报已生成并加入推送队列" >> "$LOG_FILE"
 echo "[$DATE_STR $TIME_STR] 早餐汇报生成完成 ✓" >> "$LOG_FILE"

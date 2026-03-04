@@ -15,7 +15,11 @@
     "executablePath": "/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome",
     "headless": false,
     "noSandbox": true,
-    "defaultProfile": "openclaw"
+    "defaultProfile": "openclaw",
+    "extraArgs": [
+      "--window-size=1920,1080",
+      "--test-type"
+    ]
   },
   "models": {
     "providers": {
@@ -121,7 +125,10 @@
         "every": "2h",
         "target": "none",
         "prompt": "HEARTBEAT_OK",
-        "activeHours": { "start": "08:00", "end": "22:00" }
+        "activeHours": {
+          "start": "08:00",
+          "end": "22:00"
+        }
       },
       "maxConcurrent": 4,
       "subagents": {
