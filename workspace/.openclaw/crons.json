@@ -1,66 +1,142 @@
 {
   "crons": [
     {
-      "name": "ai-daily-report",
-      "schedule": "0 10 * * *",
+      "name": "sanwan-diary-monitor",
+      "schedule": "0 9 * * *",
       "timezone": "Asia/Shanghai",
-      "task": "生成每日AI产品动态观察日报",
-      "workflow": "WORKFLOWS/ai-daily-report.md",
+      "task": "监控龙虾养成日记更新",
+      "workflow": "WORKFLOWS/sanwan-diary-monitor.md",
       "steps": [
         {
           "order": 1,
           "action": "read",
-          "target": "WORKFLOWS/ai-daily-report.md",
-          "description": "读取工作流配置和自检清单"
+          "target": "memory/sanwan-diary-last-day.txt",
+          "description": "读取上次检测的Day编号"
         },
         {
           "order": 2,
-          "action": "verify_date",
-          "description": "确认当前日期和美国日期（考虑时差）"
+          "action": "fetch",
+          "tool": "coze-web-fetch",
+          "url": "https://sanwan.ai/diary.html",
+          "description": "获取龙虾日记网页内容"
         },
         {
           "order": 3,
-          "action": "search",
-          "tool": "coze-web-search",
-          "queries": [
-            "AI news today March 2026",
-            "OpenAI Anthropic Google Gemini news today",
-            "字节 AI 产品 2026年3月"
-          ],
-          "params": {
-            "time_range": "1d",
-            "count": 15,
-            "format": "markdown"
-          },
-          "description": "搜索24小时内发布的AI新闻"
+          "action": "parse",
+          "description": "解析最新Day编号和标题"
         },
         {
           "order": 4,
-          "action": "verify_sources",
-          "description": "交叉验证信源，排除旧闻和转载"
+          "action": "compare",
+          "description": "对比本地记录，检测是否有更新"
         },
         {
           "order": 5,
-          "action": "generate",
-          "template": "daily_report",
-          "constraints": [
-            "只收录已验证的24小时内新闻",
-            "标注每条新闻的可信度（✅/⚠️/❌）",
-            "如果新闻不足，诚实说明"
-          ]
+          "action": "extract",
+          "condition": "has_update",
+          "description": "如有更新，提取新日记完整内容"
         },
         {
           "order": 6,
+          "action": "generate_summary",
+          "description": "生成新日记的内容摘要"
+        },
+        {
+          "order": 7,
           "action": "send",
           "channel": "feishu",
           "target": "Jialu",
-          "description": "发送日报到飞书"
+          "description": "推送更新到飞书"
+        },
+        {
+          "order": 8,
+          "action": "write",
+          "target": "memory/sanwan-diary-last-day.txt",
+          "description": "更新本地记录"
+        }
+      ]
+    },
+    {
+      "name": "ai-daily-report",
+      "schedule": "0 10 * * *",
+      "timezone": "Asia/Shanghai",
+      "task": "生成每日AI产品动态观察日报（Prime Scope版）",
+      "workflow": "WORKFLOWS/primescope-ai-daily-report.md",
+      "steps": [
+        {
+          "order": 1,
+          "action": "read",
+          "target": "WORKFLOWS/primescope-ai-daily-report.md",
+          "description": "读取Prime Scope工作流配置和检查清单"
+        },
+        {
+          "order": 2,
+          "action": "check_date",
+          "description": "确认当前北京时间，严格限制搜索范围为24小时内"
+        },
+        {
+          "order": 3,
+          "action": "search_multi_engine",
+          "tools": ["tavily", "brave", "exa", "coze-web-search"],
+          "queries": [
+            "OpenAI Google Anthropic Meta AI news today",
+            "字节跳动 阿里 腾讯 AI 产品 今日",
+            "AI startup funding today",
+            "AI regulation policy today"
+          ],
+          "params": {
+            "time_range": "1d",
+            "count": 10,
+            "format": "markdown"
+          },
+          "description": "多引擎搜索24小时内AI新闻"
+        },
+        {
+          "order": 4,
+          "action": "categorize",
+          "description": "按大厂/初创/生态三维度分类新闻"
+        },
+        {
+          "order": 5,
+          "action": "verify_and_tag",
+          "description": "验证时效性，标注核心价值标签和可信度（✅/⚠️）"
+        },
+        {
+          "order": 6,
+          "action": "generate_key_takeaways",
+          "description": "生成Key Takeaways（关键张力/趋势判断/战略启示）"
+        },
+        {
+          "order": 7,
+          "action": "generate_report",
+          "template": "primescope_daily_report",
+          "constraints": [
+            "严格24小时内新闻",
+            "每篇必须包含：标签+数据+可信度",
+            "洞察必须跨越多个事件+对字节启示",
+            "宁缺毋滥，无足够内容诚实说明"
+          ]
+        },
+        {
+          "order": 8,
+          "action": "save",
+          "target": "memory/daily-reports/YYYY-MM-DD-primescope.md",
+          "description": "保存日报到本地"
+        },
+        {
+          "order": 9,
+          "action": "send",
+          "channel": "feishu",
+          "target": "Jialu",
+          "description": "推送日报到飞书"
         }
       ],
       "quality_checks": {
         "max_old_news_ratio": 0.1,
         "require_official_source": true,
         "require_cross_verification": true,
+        "require_key_takeaways": true,
+        "require_bytedance_insight": true,
         "honesty_policy": "宁缺毋滥"
       }
     }

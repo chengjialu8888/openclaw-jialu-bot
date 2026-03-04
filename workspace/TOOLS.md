@@ -52,6 +52,20 @@ Add whatever helps you do your job. This is your cheat sheet.
 - Name: Genius
 - API Key: tavern_e5ef29cb58541cece680fef8f63f61808b179133d92c7d0c3b8fe56698acb274
 
+## API Keys
+
+### Tavily (AI Search)
+- Storage: `.env` / `.env.tavily`
+- Key: `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`
+
+### Brave (Search)
+- Storage: `.env`
+- Key: `BSAO1u2ig_-n63B26Z4ZpkPGMqF8yVo`
+
+### Exa (AI Search)
+- Storage: `.env`
+- Key: `7814c858-171a-473f-9b1f-b9e1056571fa`
+
 ## Browser
 
 After using browser capabilities, you should generate the browser preview URL for the user. The rules are:

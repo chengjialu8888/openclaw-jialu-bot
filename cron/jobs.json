@@ -7,7 +7,10 @@
       "expr": "30 8 * * *",
       "enabled": true,
       "description": "每天早上8:30汇报昨晚EvoMap进化情况，执行完成后推送结果",
-      "state": {},
+      "state": {
+        "scheduleErrorCount": 2,
+        "lastError": "schedule error: TypeError: Cannot read properties of undefined (reading 'kind')"
+      },
       "wakeMode": "now",
       "payload": {
         "kind": "systemEvent",
@@ -21,7 +24,10 @@
       "expr": "0 10 * * *",
       "enabled": true,
       "description": "每天10:00am执行Signex架构日报，执行完成后推送数据采集结果",
-      "state": {},
+      "state": {
+        "scheduleErrorCount": 2,
+        "lastError": "schedule error: TypeError: Cannot read properties of undefined (reading 'kind')"
+      },
       "wakeMode": "now",
       "payload": {
         "kind": "systemEvent",
@@ -35,7 +41,10 @@
       "expr": "59 23 * * *",
       "enabled": true,
       "description": "每天23:59统计Token消耗并推送（需配置OpenClaw API获取实际数据）",
-      "state": {},
+      "state": {
+        "scheduleErrorCount": 2,
+        "lastError": "schedule error: TypeError: Cannot read properties of undefined (reading 'kind')"
+      },
       "wakeMode": "now",
       "payload": {
         "kind": "systemEvent",

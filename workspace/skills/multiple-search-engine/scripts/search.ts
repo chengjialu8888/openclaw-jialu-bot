@@ -103,7 +103,7 @@ async function searchTavily(query: string, count: number): Promise<SearchResult[
       throw new Error(`HTTP ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return (data.results || []).map((r: any) => ({
       title: r.title || '',
       url: r.url || '',
@@ -144,7 +144,7 @@ async function searchBrave(query: string, count: number): Promise<SearchResult[]
       throw new Error(`HTTP ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return (data.web?.results || []).map((r: any) => ({
       title: r.title || '',
       url: r.url || '',
@@ -162,45 +162,69 @@ async function searchBrave(query: string, count: number): Promise<SearchResult[]
 // Search with Coze Web Search (via skill)
 async function searchCoze(query: string, count: number, timeRange: string): Promise<SearchResult[]> {
   try {
-    const baseDir = path.dirname(__dirname);
-    const scriptPath = path.join(baseDir, '..', 'coze-web-search', 'scripts', 'search.ts');
+    // Get workspace root from current working directory
+    const workspaceRoot = process.cwd();
+    const scriptPath = path.join(workspaceRoot, 'skills', 'coze-web-search', 'scripts', 'search.ts');
+    
+    // Check if script exists
+    if (!fs.existsSync(scriptPath)) {
+      console.warn(`⚠️ Coze script not found at: ${scriptPath}`);
+      return [];
+    }
     
     const result = execSync(
-      `npx ts-node "${scriptPath}" -q "${query}" --time-range ${timeRange} --count ${count} --format json`,
-      { encoding: 'utf-8', timeout: 30000 }
+      `npx ts-node "${scriptPath}" -q "${query}" --count ${count}`,
+      { encoding: 'utf-8', timeout: 30000, cwd: workspaceRoot }
     );
+
+    // Debug: log first 500 chars of output
+    console.log(`  Debug: got ${result.length} chars output`);
 
     // Parse the text output to extract results
     const lines = result.split('\n');
     const results: SearchResult[] = [];
     let currentResult: Partial<SearchResult> = {};
+    let inResults = false;
 
     for (const line of lines) {
-      if (line.match(/^\[\d+\]/)) {
+      // Skip header lines until we see the separator
+      if (line.includes('===') && line.includes('SEARCH RESULTS')) {
+        inResults = true;
+        continue;
+      }
+      if (!inResults) continue;
+      
+      // Parse result entry like "[1] Title"
+      const match = line.match(/^\[(\d+)\]\s*(.+)$/);
+      if (match) {
+        // Save previous result if exists
         if (currentResult.title) {
           results.push({
             title: currentResult.title || '',
             url: currentResult.url || '',
-            snippet: currentResult.snippet || '',
+            snippet: (currentResult.snippet || '').slice(0, 200),
             source: 'coze',
             score: 0.5
           });
         }
-        currentResult = { title: line.replace(/^\[\d+\]\s*/, '') };
-      } else if (line.includes('URL:')) {
+        currentResult = { title: match[2].trim() };
+      } else if (line.includes('URL:') && currentResult.title) {
         currentResult.url = line.replace(/.*URL:\s*/, '').trim();
       } else if (line.includes('Source:')) {
         // skip
-      } else if (line.trim() && !line.includes('===')) {
+      } else if (line.includes('Published:')) {
+        currentResult.published = line.replace(/.*Published:\s*/, '').trim();
+      } else if (line.trim() && !line.includes('===') && currentResult.title) {
         currentResult.snippet = (currentResult.snippet || '') + line.trim() + ' ';
       }
     }
 
+    // Don't forget the last result
     if (currentResult.title) {
       results.push({
         title: currentResult.title,
         url: currentResult.url || '',
-        snippet: currentResult.snippet || '',
+        snippet: (currentResult.snippet || '').slice(0, 200),
         source: 'coze',
         score: 0.5
       });
@@ -239,7 +263,7 @@ async function searchExa(query: string, count: number): Promise<SearchResult[]> 
       throw new Error(`HTTP ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
     return (data.results || []).map((r: any) => ({
       title: r.title || '',
       url: r.url || '',

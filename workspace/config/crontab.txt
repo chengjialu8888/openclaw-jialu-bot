@@ -1,0 +1,17 @@
+# OpenClaw 定时任务配置
+# 生成时间：2026-03-04
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# 护法晨间祈福 - 每天 8:00
+0 8 * * * /workspace/projects/workspace/scripts/trigger-dharma-morning.sh >> /workspace/projects/workspace/logs/cron-dharma.log 2>&1
+
+# 龙虾日记监控 - 每天 9:00
+0 9 * * * /workspace/projects/workspace/scripts/trigger-sanwan-diary.sh >> /workspace/projects/workspace/logs/cron-sanwan.log 2>&1
+
+# AI 日报生成 - 每天 10:00
+0 10 * * * /workspace/projects/workspace/scripts/trigger-daily-report.sh >> /workspace/projects/workspace/logs/cron-daily.log 2>&1
+
+# 推送队列处理 - 每 5 分钟检查一次
+*/5 * * * * /workspace/projects/workspace/scripts/push_queue.sh >> /workspace/projects/workspace/logs/cron-push.log 2>&1
