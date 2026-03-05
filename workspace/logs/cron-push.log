@@ -21,3 +21,4 @@ Usage: /workspace/projects/workspace/scripts/push_queue.sh add <type> <title> <c
 Usage: /workspace/projects/workspace/scripts/push_queue.sh add <type> <title> <content>
 Usage: /workspace/projects/workspace/scripts/push_queue.sh add <type> <title> <content>
 Usage: /workspace/projects/workspace/scripts/push_queue.sh add <type> <title> <content>
+Usage: /workspace/projects/workspace/scripts/push_queue.sh add <type> <title> <content>
