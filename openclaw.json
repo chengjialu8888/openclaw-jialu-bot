@@ -1,7 +1,7 @@
 {
   "meta": {
-    "lastTouchedVersion": "2026.3.1",
-    "lastTouchedAt": "2026-03-03T05:21:22.557Z"
+    "lastTouchedVersion": "2026.3.2",
+    "lastTouchedAt": "2026-03-05T04:44:32.363Z"
   },
   "wizard": {
     "lastRunAt": "2026-03-03T05:21:22.524Z",
@@ -123,12 +123,12 @@
       },
       "heartbeat": {
         "every": "2h",
-        "target": "none",
-        "prompt": "HEARTBEAT_OK",
         "activeHours": {
           "start": "08:00",
           "end": "22:00"
-        }
+        },
+        "target": "none",
+        "prompt": "HEARTBEAT_OK"
       },
       "maxConcurrent": 4,
       "subagents": {
@@ -294,8 +294,25 @@
     "entries": {
       "feishu": {
         "enabled": true
+      },
+      "feishu-openclaw-plugin": {
+        "enabled": true
       }
     },
-    "installs": {}
+    "installs": {
+      "feishu-openclaw-plugin": {
+        "source": "npm",
+        "spec": "@larksuiteoapi/feishu-openclaw-plugin",
+        "installPath": "/workspace/projects/extensions/feishu-openclaw-plugin",
+        "version": "2026.3.5",
+        "resolvedName": "@larksuiteoapi/feishu-openclaw-plugin",
+        "resolvedVersion": "2026.3.5",
+        "resolvedSpec": "@larksuiteoapi/feishu-openclaw-plugin@2026.3.5",
+        "integrity": "sha512-SgGvRKsgxojh4daX2OxKPErWM3ROCI5ExJ2Pr0QZ5lVq4H1dAV3/W7/H0578MfskaLnkvtoYMKKr1WJeJhmvwg==",
+        "shasum": "4a335de71c74ce10c70700ef17544f3532e8ee69",
+        "resolvedAt": "2026-03-05T04:43:47.121Z",
+        "installedAt": "2026-03-05T04:44:29.989Z"
+      }
+    }
   }
 }

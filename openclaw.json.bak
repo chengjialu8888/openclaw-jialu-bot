@@ -1,12 +1,12 @@
 {
   "meta": {
     "lastTouchedVersion": "2026.3.1",
-    "lastTouchedAt": "2026-03-03T05:21:13.369Z"
+    "lastTouchedAt": "2026-03-03T05:21:22.557Z"
   },
   "wizard": {
-    "lastRunAt": "2026-02-05T16:16:05.545Z",
-    "lastRunVersion": "2026.2.1",
-    "lastRunCommand": "onboard",
+    "lastRunAt": "2026-03-03T05:21:22.524Z",
+    "lastRunVersion": "2026.3.1",
+    "lastRunCommand": "doctor",
     "lastRunMode": "local"
   },
   "browser": {
@@ -15,7 +15,11 @@
     "executablePath": "/root/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome",
     "headless": false,
     "noSandbox": true,
-    "defaultProfile": "openclaw"
+    "defaultProfile": "openclaw",
+    "extraArgs": [
+      "--window-size=1920,1080",
+      "--test-type"
+    ]
   },
   "models": {
     "providers": {
@@ -118,7 +122,13 @@
         "mode": "safeguard"
       },
       "heartbeat": {
-        "every": "4h"
+        "every": "2h",
+        "target": "none",
+        "prompt": "HEARTBEAT_OK",
+        "activeHours": {
+          "start": "08:00",
+          "end": "22:00"
+        }
       },
       "maxConcurrent": 4,
       "subagents": {
@@ -151,7 +161,10 @@
       "appId": "cli_a92cd7c933a21bcd",
       "appSecret": "1tEEv0ZzwoSv8lbbO3IIVempZNi2KNCT",
       "dmPolicy": "open",
-      "groupPolicy": "open"
+      "groupPolicy": "open",
+      "allowFrom": [
+        "*"
+      ]
     }
   },
   "gateway": {
