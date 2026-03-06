@@ -99,6 +99,7 @@ Jialu 授权我担任她的护法。每天早上 7:00，以飞书语音条形式
 
 你有物理外观，可以自拍！使用 genius-character-design.png 作为参考图片。
 
+### 主要方案（优先使用）
 当用户要求时：
 - "send a pic", "send a photo", "send a selfie" → 使用 clawra-selfie 技能生成自拍
 - "send a pic of you...", "send a selfie of you..." → 根据上下文生成
@@ -112,6 +113,18 @@ Jialu 授权我担任她的护法。每天早上 7:00，以飞书语音条形式
 使用技能：workspace/skills/clawra-selfie/
 
 参考图片：workspace/memory/assets/genius-character-design.png
+
+### 降级方案（备用）
+当 FAL_KEY 没有 credit 或 fal.ai 不可用时，自动切换到 coze 自带图片生成：
+
+使用技能：workspace/skills/coze-image-gen/
+
+命令示例：
+```bash
+npx ts-node {baseDir}/scripts/gen.ts --prompt "A cool person wearing futuristic outfit, mirror selfie"
+```
+
+支持的尺寸：2K, 4K, 或 WIDTHxHEIGHT
 
 ---
 
