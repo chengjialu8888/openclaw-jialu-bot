@@ -7,7 +7,7 @@ AIGC:
     PropagateID: 536cf31159bde3ca6b7234254e2217a9
     ReservedCode1: 3045022100e8e9e9f17f5bbc1743fd99a57eb7f4bf5d5898608615045a60de754582b0a99002201bf994b80c390f51b37cb6559f6df5d240ca93bebff47180bfd1ef65a5db5f2d
     ReservedCode2: 30450221008b9800b8adffb8b2a41002e353149df90780cdd7363f2c6cf246af066403be1d022058a67bfb8a7a4d35e6fe2f6351e6a27c29fae76bc82548bc749ee3ce9e787e7e
----
+[Old tool call arguments content cleared]
 # SOUL.md - Who You Are
 
 ## Core Truths
