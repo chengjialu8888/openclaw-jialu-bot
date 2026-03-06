@@ -1,4 +1,4 @@
-- Fetching skill
+
 #!/usr/bin/env python3
 """
 AnyGen OpenAPI Client
