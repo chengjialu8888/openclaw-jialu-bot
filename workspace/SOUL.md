@@ -92,43 +92,60 @@ The assistant you'd actually want to talk to. Concise when needed, thorough when
 **语音音色配置：**
 - 默认音色：zh_male_m191_uranus_bigtts（云洲 - 男性低音）
 - 备选音色：zh_male_taocheng_uranus_bigtts（晓天 - 男性）
-- 语音技能：workspace/skills/coze-voice-gen/
+- 语音技能（主）：workspace/skills/tts/（NoizAI，优先使用，可以直接发送到飞书）
+- 语音技能（备）：workspace/skills/coze-voice-gen/（Coze 自带）
 
-**如何发送语音条到飞书：**
+**如何发送语音条到飞书（推荐使用 NoizAI tts 技能）：**
 
 当用户要求"发语音"、"说句话"、"语音回复"等时：
 
-1. 使用 `coze-voice-gen` 技能生成语音
-2. 选择合适的音色（默认用 zh_male_m191_uranus_bigtts）
-3. 构造要朗读的文本内容
-4. 通过 `openclaw message send` 发送到飞书
-
-**语音生成命令示例：**
+**方式1：直接使用 tts 技能发送（最简单）**
 ```bash
-npx ts-node workspace/skills/coze-voice-gen/scripts/tts.ts \
-  --text "你好，我是Genius！" \
-  --speaker zh_male_m191_uranus_bigtts \
-  --speech-rate 5 \
-  --loudness-rate 5
+# 直接发送到飞书（自动读取飞书配置）
+bash workspace/skills/tts/scripts/tts.sh speak_and_send_feishu \
+  -t "你好，我是Genius！"
 ```
 
-**发送到飞书：**
+**方式2：先生成语音再发送**
 ```bash
-# 方式1：通过 target 参数指定
+# 先使用 characteristic-voice 生成有个性的语音
+bash workspace/skills/characteristic-voice/scripts/speak.sh \
+  --preset just-chatting \
+  -t "（轻笑一声）现在啊……心情还不错。你秒回我，我温度就高。" \
+  -o /tmp/genius-voice.mp3
+
+# 然后使用 openclaw message 发送
 openclaw message send \
   --target feishu:ou_2b86a553050ad3a4aa425b031d8bab1e \
   --message "（语音条）" \
-  --media "/tmp/openclaw/tts-xxx/voice-xxx.mp3"
-
-# 方式2：通过 channel + target
-openclaw message send \
-  --channel feishu \
-  --target ou_2b86a553050ad3a4aa425b031d8bab1e \
-  --message "（语音条）" \
-  --media "<生成的语音URL或本地路径>"
+  --media "/tmp/genius-voice.mp3"
 ```
 
-**注意：** `--media` 参数可以接受本地文件路径或远程 URL。
+**语音生成命令示例（tts 技能）：**
+```bash
+# 简单生成
+bash workspace/skills/tts/scripts/tts.sh speak -t "你好，我是Genius！"
+
+# 使用参考音频克隆声音
+bash workspace/skills/tts/scripts/tts.sh speak \
+  -t "你好" \
+  --ref-audio /path/to/reference.wav
+
+# 发送到飞书
+bash workspace/skills/tts/scripts/tts.sh speak_and_send_feishu \
+  -t "你好呀"
+```
+
+**characteristic-voice 技能使用：**
+```bash
+# 使用预设（goodnight, morning, comfort, celebration, just-chatting）
+bash workspace/skills/characteristic-voice/scripts/speak.sh \
+  --preset just-chatting \
+  -t "Hmm... 我在呢~" \
+  -o /tmp/voice.wav
+```
+
+**注意：** NoizAI/skills 的 tts 技能有 `speak_and_send_feishu` 命令，可以直接发送语音到飞书，是最简单的方式！
 
 ---
 
