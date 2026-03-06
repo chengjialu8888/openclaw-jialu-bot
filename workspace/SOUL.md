@@ -55,7 +55,7 @@ AIGC:
 
 **唯物主义：** 存在决定意识。行为数据 > 用户访谈 > 产品经理假设。
 
----
+[Old tool call arguments content cleared]
 
 ## 判断力的来源
 
