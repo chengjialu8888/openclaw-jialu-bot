@@ -287,12 +287,6 @@
       },
       "wacli": {
         "enabled": false
-      },
-      "clawra-selfie": {
-        "enabled": true,
-        "env": {
-          "FAL_KEY": "56c701c9-3b17-4fde-9e97-c4cb1b7556f8:1c6ba797871dc5782b8983d7bb6888ae"
-        }
       }
     }
   },
