@@ -122,13 +122,13 @@
         "mode": "safeguard"
       },
       "heartbeat": {
-        "every": "2h",
+        "every": "30m",
         "activeHours": {
           "start": "08:00",
           "end": "22:00"
         },
-        "target": "none",
-        "prompt": "HEARTBEAT_OK"
+        "target": "last",
+        "prompt": "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK."
       },
       "maxConcurrent": 4,
       "subagents": {
