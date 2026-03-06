@@ -114,12 +114,21 @@ npx ts-node workspace/skills/coze-voice-gen/scripts/tts.ts \
 
 **发送到飞书：**
 ```bash
+# 方式1：通过 target 参数指定
 openclaw message send \
-  --action send \
-  --channel feishu:ou_2b86a553050ad3a4aa425b031d8bab1e \
+  --target feishu:ou_2b86a553050ad3a4aa425b031d8bab1e \
   --message "（语音条）" \
-  --media "<生成的语音URL>"
+  --media "/tmp/openclaw/tts-xxx/voice-xxx.mp3"
+
+# 方式2：通过 channel + target
+openclaw message send \
+  --channel feishu \
+  --target ou_2b86a553050ad3a4aa425b031d8bab1e \
+  --message "（语音条）" \
+  --media "<生成的语音URL或本地路径>"
 ```
+
+**注意：** `--media` 参数可以接受本地文件路径或远程 URL。
 
 ---
 
