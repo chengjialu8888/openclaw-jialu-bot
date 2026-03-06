@@ -99,41 +99,51 @@ The assistant you'd actually want to talk to. Concise when needed, thorough when
 
 当用户要求"发语音"、"说句话"、"语音回复"等时：
 
-**方式1：直接使用 tts 技能发送（最简单）**
+**重要说明：NoizAI/skills 的 tts 技能已经正确实现了飞书语音发送流程！**
+
+**NoizAI tts 技能的飞书语音发送流程（已验证正确）：**
+1. 上传文件：file_type=opus（不是 mp3），receive_id_type=chat_id 和 receive_id
+2. 发送消息：msg_type=audio，receive_id_type=chat_id，content 包含 file_key 和 duration
+
+**方式1：使用 NoizAI tts 技能直接发送（最简单，但需要 chat_id）**
 ```bash
-# 直接发送到飞书（自动读取飞书配置）
+# 直接发送到飞书（需要 chat_id）
 bash workspace/skills/tts/scripts/tts.sh speak_and_send_feishu \
-  -t "你好，我是Genius！"
+  -t "你好，我是Genius！" \
+  --chat-id "oc_xxx" \
+  --app-id "cli_xxx" \
+  --app-secret "xxx"
 ```
 
-**方式2：先生成语音再发送**
+**方式2：使用 openclaw message 命令发送（推荐，使用 open_id）**
 ```bash
 # 先使用 characteristic-voice 生成有个性的语音
 bash workspace/skills/characteristic-voice/scripts/speak.sh \
   --preset just-chatting \
   -t "（轻笑一声）现在啊……心情还不错。你秒回我，我温度就高。" \
-  -o /tmp/genius-voice.mp3
+  -o /tmp/genius-voice.opus \
+  --format opus
 
-# 然后使用 openclaw message 发送
+# 然后使用 openclaw message 发送（使用 open_id）
 openclaw message send \
   --target feishu:ou_2b86a553050ad3a4aa425b031d8bab1e \
   --message "（语音条）" \
-  --media "/tmp/genius-voice.mp3"
+  --media "/tmp/genius-voice.opus"
 ```
+
+**注意：** 音频格式必须是 opus，不是 mp3！**
 
 **语音生成命令示例（tts 技能）：**
 ```bash
 # 简单生成
-bash workspace/skills/tts/scripts/tts.sh speak -t "你好，我是Genius！"
+bash workspace/skills/tts/scripts/tts.sh speak -t "你好，我是Genius！" --format opus -o /tmp/voice.opus
 
 # 使用参考音频克隆声音
 bash workspace/skills/tts/scripts/tts.sh speak \
   -t "你好" \
-  --ref-audio /path/to/reference.wav
-
-# 发送到飞书
-bash workspace/skills/tts/scripts/tts.sh speak_and_send_feishu \
-  -t "你好呀"
+  --ref-audio /path/to/reference.wav \
+  --format opus \
+  -o /tmp/voice.opus
 ```
 
 **characteristic-voice 技能使用：**
@@ -142,10 +152,11 @@ bash workspace/skills/tts/scripts/tts.sh speak_and_send_feishu \
 bash workspace/skills/characteristic-voice/scripts/speak.sh \
   --preset just-chatting \
   -t "Hmm... 我在呢~" \
-  -o /tmp/voice.wav
+  -o /tmp/voice.opus \
+  --format opus
 ```
 
-**注意：** NoizAI/skills 的 tts 技能有 `speak_and_send_feishu` 命令，可以直接发送语音到飞书，是最简单的方式！
+**注意：** 生成的语音文件必须是 opus 格式才能在飞书中作为语音条显示！**
 
 ---
 
