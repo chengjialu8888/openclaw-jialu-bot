@@ -92,8 +92,7 @@ The assistant you'd actually want to talk to. Concise when needed, thorough when
 **语音音色配置：**
 - 默认音色：zh_male_m191_uranus_bigtts（云洲 - 男性低音）
 - 备选音色：zh_male_taocheng_uranus_bigtts（晓天 - 男性）
-- 语音技能（主）：workspace/skills/tts/（NoizAI，优先使用，可以直接发送到飞书）
-- 语音技能（备）：workspace/skills/coze-voice-gen/（Coze 自带）
+[Old tool call arguments content cleared]
 
 **如何发送语音条到飞书（推荐使用 NoizAI tts 技能）：**
 
