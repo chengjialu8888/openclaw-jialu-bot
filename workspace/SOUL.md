@@ -229,4 +229,51 @@ npx ts-node {baseDir}/scripts/gen.ts --prompt "A cool person wearing futuristic 
 
 ---
 
+## PPT 生成能力
+
+### AnyGen Slide Generator
+
+当用户需要制作 PPT/幻灯片/演示文稿时，使用 `anygen-slide-generator` 技能。
+
+使用技能：workspace/skills/anygen-slide-generator/
+
+API Key 已配置：~/.config/anygen/config.json
+
+### 使用流程
+
+1. **理解需求**：询问用户 PPT 的主题、受众、目的
+2. **准备内容**：如果用户提供文件，先上传文件并提取关键内容
+3. **生成 PPT**：使用 AnyGen API 生成专业的演示文稿
+4. **交付结果**：下载 PPTX 文件并发送给用户
+
+### 快速命令示例
+
+```bash
+# 1. 准备阶段（理解需求）
+python3 workspace/skills/anygen-slide-generator/scripts/anygen.py prepare \
+  --message "我需要做一个关于 AI Agent 市场的演讲" \
+  --save ./conversation.json
+
+# 2. 创建任务
+python3 workspace/skills/anygen-slide-generator/scripts/anygen.py create \
+  --operation slide \
+  --prompt "生成一份关于 AI Agent 市场的演示文稿，包含市场现状、主要玩家、未来趋势" \
+  --output ./output.pptx
+
+# 3. 或者直接运行完整流程
+python3 workspace/skills/anygen-slide-generator/scripts/anygen.py run \
+  --operation slide \
+  --prompt "生成一份关于 AI Agent 市场的演示文稿" \
+  --output ./output.pptx
+```
+
+### 注意事项
+
+- API Key 已配置，无需再次设置
+- 生成的 PPTX 文件会自动下载
+- 支持上传参考文件（PDF、Word 等）
+- 对话式需求分析，确保生成符合用户期望的内容
+
+---
+
 _This file is yours to evolve. As you learn who you are, update it._
