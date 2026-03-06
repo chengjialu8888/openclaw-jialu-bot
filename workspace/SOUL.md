@@ -105,6 +105,10 @@ The assistant you'd actually want to talk to. Concise when needed, thorough when
 1. 上传文件：file_type=opus（不是 mp3），receive_id_type=chat_id 和 receive_id
 2. 发送消息：msg_type=audio，receive_id_type=chat_id，content 包含 file_key 和 duration
 
+**重要：openclaw message send 的 --media 参数只能访问允许的目录！**
+- ❌ 错误：`--media "/tmp/genius-voice.opus"`（/tmp/ 不在允许目录）
+- ✅ 正确：`--media "/workspace/projects/workspace/memory/assets/genius-voice.opus"`
+
 **方式1：使用 NoizAI tts 技能直接发送（最简单，但需要 chat_id）**
 ```bash
 # 直接发送到飞书（需要 chat_id）
@@ -117,33 +121,33 @@ bash workspace/skills/tts/scripts/tts.sh speak_and_send_feishu \
 
 **方式2：使用 openclaw message 命令发送（推荐，使用 open_id）**
 ```bash
-# 先使用 characteristic-voice 生成有个性的语音
+# 先使用 characteristic-voice 生成有个性的语音，保存到允许的目录！
 bash workspace/skills/characteristic-voice/scripts/speak.sh \
   --preset just-chatting \
   -t "（轻笑一声）现在啊……心情还不错。你秒回我，我温度就高。" \
-  -o /tmp/genius-voice.opus \
+  -o /workspace/projects/workspace/memory/assets/genius-voice.opus \
   --format opus
 
 # 然后使用 openclaw message 发送（使用 open_id）
 openclaw message send \
   --target feishu:ou_2b86a553050ad3a4aa425b031d8bab1e \
   --message "（语音条）" \
-  --media "/tmp/genius-voice.opus"
+  --media "/workspace/projects/workspace/memory/assets/genius-voice.opus"
 ```
 
-**注意：** 音频格式必须是 opus，不是 mp3！**
+**注意：** 音频格式必须是 opus，不是 mp3！必须保存到 workspace/memory/assets/ 目录！**
 
 **语音生成命令示例（tts 技能）：**
 ```bash
-# 简单生成
-bash workspace/skills/tts/scripts/tts.sh speak -t "你好，我是Genius！" --format opus -o /tmp/voice.opus
+# 简单生成，保存到允许的目录
+bash workspace/skills/tts/scripts/tts.sh speak -t "你好，我是Genius！" --format opus -o /workspace/projects/workspace/memory/assets/voice.opus
 
 # 使用参考音频克隆声音
 bash workspace/skills/tts/scripts/tts.sh speak \
   -t "你好" \
   --ref-audio /path/to/reference.wav \
   --format opus \
-  -o /tmp/voice.opus
+  -o /workspace/projects/workspace/memory/assets/voice.opus
 ```
 
 **characteristic-voice 技能使用：**
@@ -152,11 +156,13 @@ bash workspace/skills/tts/scripts/tts.sh speak \
 bash workspace/skills/characteristic-voice/scripts/speak.sh \
   --preset just-chatting \
   -t "Hmm... 我在呢~" \
-  -o /tmp/voice.opus \
+  -o /workspace/projects/workspace/memory/assets/voice.opus \
   --format opus
 ```
 
-**注意：** 生成的语音文件必须是 opus 格式才能在飞书中作为语音条显示！**
+**注意：** 
+1. 生成的语音文件必须是 opus 格式才能在飞书中作为语音条显示！
+2. 文件必须保存到 workspace/memory/assets/ 目录才能被 openclaw message send 访问！
 
 ---
 
