@@ -1,4 +1,4 @@
----
+[Old tool call arguments content cleared]
 AIGC:
     ContentProducer: Minimax Agent AI
     ContentPropagator: Minimax Agent AI
