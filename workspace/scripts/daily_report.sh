@@ -1,6 +1,19 @@
 #!/bin/bash
 # AI行业日报脚本 - 每天10:30执行
-# 使用多引擎搜索(Brave/Tavily)获取当天及前一天的AI行业动态
+# 使用多引擎搜索(Brave/Tavily/SearXNG/QVeris)获取当天及前一天的AI行业动态
+#
+# 可选：添加SearXNG搜索（私有化部署，无API限制）
+# export SEARXNG_ENDPOINT="http://localhost:8080"
+#
+# 可选：添加QVeris实时新闻搜索
+# export QVERIS_API_KEY="your_key_here"
+#
+# SearXNG部署指南：
+# docker run -d --name searxng -p 8080:8080 searxng/searxng
+#
+# QVeris安装指南：
+# curl -fSL https://qveris.ai/skill/SKILL.md -o ~/.openclaw/skills/qveris/SKILL.md
+# curl -fSL https://qveris.ai/skill/scripts/qveris_tool.mjs -o ~/.openclaw/skills/qveris/scripts/qveris_tool.mjs
 
 BASE_DIR="/workspace/projects/workspace"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M')
@@ -9,6 +22,12 @@ DATE_STR=$(date '+%Y-%m-%d')
 # 设置API Key
 export BRAVE_API_KEY="BSAO1u2ig_-n63B26Z4ZpkPGMqF8yVo"
 export TAVILY_API_KEY="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"
+
+# 可选：启用SearXNG（取消下行注释并修改地址）
+# export SEARXNG_ENDPOINT="http://localhost:8080"
+
+# 可选：启用QVeris实时新闻搜索
+# export QVERIS_API_KEY="your_key_here"
 
 echo "[$TIMESTAMP] 开始生成日报..."
 

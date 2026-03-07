@@ -16,6 +16,15 @@ const CONFIG = {
     tavily: {
         apiKey: process.env.TAVILY_API_KEY,
         endpoint: 'https://api.tavily.com/search'
+    },
+    searxng: {
+        endpoint: process.env.SEARXNG_ENDPOINT || 'http://localhost:8080',
+        enabled: !!process.env.SEARXNG_ENDPOINT
+    },
+    qveris: {
+        apiKey: process.env.QVERIS_API_KEY,
+        enabled: !!process.env.QVERIS_API_KEY,
+        newsToolId: 'newsdata.news.search.v1.b65ccc56'  // 新闻搜索工具ID
     }
 };
 
@@ -143,6 +152,116 @@ async function searchTavily(query, count = 10) {
     }
 }
 
+// 搜索SearXNG
+async function searchSearxng(query, count = 10) {
+    if (!CONFIG.searxng.enabled) {
+        console.log('⚠️  SearXNG 未配置 (需设置 SEARXNG_ENDPOINT 环境变量)');
+        return null;
+    }
+    
+    try {
+        console.log('  📡 正在连接 SearXNG...');
+        
+        const url = new URL(`${CONFIG.searxng.endpoint}/search`);
+        url.searchParams.append('q', query);
+        url.searchParams.append('format', 'json');
+        url.searchParams.append('categories', 'general');
+        url.searchParams.append('language', 'zh-CN');
+        url.searchParams.append('time_range', 'day');
+        
+        const response = await fetchWithTimeout(url, {
+            headers: {
+                'Accept': 'application/json',
+                'User-Agent': 'OpenClaw-Bot/1.0'
+            }
+        }, 15000);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        // 取前count条结果
+        const results = data.results?.slice(0, count).map(r => ({
+            title: r.title,
+            url: r.url,
+            snippet: r.content,
+            engine: r.engine,
+            score: r.score
+        })) || [];
+        
+        return {
+            source: 'SearXNG',
+            results: results,
+            engines: data.engines || []
+        };
+    } catch (error) {
+        console.error(`  ❌ SearXNG搜索失败: ${error.message}`);
+        return null;
+    }
+}
+
+// 搜索QVeris (实时新闻数据)
+async function searchQveris(query, count = 10) {
+    if (!CONFIG.qveris.enabled) {
+        console.log('⚠️  QVeris 未配置 (需设置 QVERIS_API_KEY 环境变量)');
+        return null;
+    }
+    
+    try {
+        console.log('  📡 正在连接 QVeris (实时新闻)...');
+        
+        const response = await fetchWithTimeout('https://qveris.ai/api/v1/tools/execute', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${CONFIG.qveris.apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tool_id: CONFIG.qveris.newsToolId,
+                parameters: {
+                    q: query,
+                    size: count,
+                    language: 'en',
+                    from: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 24小时内
+                },
+                max_response_size: 20480,
+                timeout_ms: 30000
+            })
+        }, 35000);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        
+        // 解析QVeris返回的新闻结果
+        let results = [];
+        if (data.result && Array.isArray(data.result)) {
+            results = data.result.slice(0, count).map(r => ({
+                title: r.title || '无标题',
+                url: r.link || r.url || '',
+                snippet: r.description || r.content || '',
+                published: r.pubDate || r.publishedAt || '',
+                source: r.source_id || r.source?.name || 'QVeris'
+            }));
+        }
+        
+        return {
+            source: 'QVeris',
+            results: results,
+            total: data.result?.length || 0
+        };
+    } catch (error) {
+        console.error(`  ❌ QVeris搜索失败: ${error.message}`);
+        return null;
+    }
+}
+
 // 综合搜索 - 合并多个引擎结果
 async function multiSearch(query, countPerEngine = 5) {
     console.log(`\n🔍 开始多引擎搜索: "${query}"\n`);
@@ -150,9 +269,11 @@ async function multiSearch(query, countPerEngine = 5) {
     const results = [];
     
     // 并行调用多个搜索引擎
-    const [braveResult, tavilyResult] = await Promise.all([
+    const [braveResult, tavilyResult, searxngResult, qverisResult] = await Promise.all([
         searchBrave(query, countPerEngine),
-        searchTavily(query, countPerEngine)
+        searchTavily(query, countPerEngine),
+        searchSearxng(query, countPerEngine),
+        searchQveris(query, countPerEngine)
     ]);
     
     if (braveResult) {
@@ -162,6 +283,14 @@ async function multiSearch(query, countPerEngine = 5) {
     if (tavilyResult) {
         results.push(tavilyResult);
         console.log(`  ✅ Tavily: ${tavilyResult.results.length} 条结果`);
+    }
+    if (searxngResult) {
+        results.push(searxngResult);
+        console.log(`  ✅ SearXNG: ${searxngResult.results.length} 条结果 (引擎: ${searxngResult.engines?.join(', ') || 'N/A'})`);
+    }
+    if (qverisResult) {
+        results.push(qverisResult);
+        console.log(`  ✅ QVeris: ${qverisResult.results.length}/${qverisResult.total} 条实时新闻`);
     }
     
     if (results.length === 0) {
@@ -193,6 +322,10 @@ function generateMarkdownReport(searchResults) {
             md += `**AI摘要**: ${engine.answer}\n\n`;
         }
         
+        if (engine.engines) {
+            md += `**聚合引擎**: ${engine.engines.join(', ')}\n\n`;
+        }
+        
         md += `### 搜索结果 (${engine.results.length})\n\n`;
         
         if (engine.results.length === 0) {
@@ -221,8 +354,21 @@ async function main() {
         console.log('用法: node multi-search.mjs "搜索关键词" [--format markdown|json]');
         console.log('');
         console.log('环境变量配置:');
-        console.log('  BRAVE_API_KEY   - Brave Search API Key');
-        console.log('  TAVILY_API_KEY  - Tavily API Key');
+        console.log('  BRAVE_API_KEY     - Brave Search API Key');
+        console.log('  TAVILY_API_KEY    - Tavily API Key');
+        console.log('  SEARXNG_ENDPOINT  - SearXNG 实例地址 (例如: http://localhost:8080)');
+        console.log('  QVERIS_API_KEY    - QVeris API Key (实时新闻数据)');
+        console.log('');
+        console.log('SearXNG 部署指南:');
+        console.log('  1. Docker部署: docker run -d --name searxng -p 8080:8080 searxng/searxng');
+        console.log('  2. 设置环境变量: export SEARXNG_ENDPOINT=http://localhost:8080');
+        console.log('  3. 运行搜索脚本');
+        console.log('');
+        console.log('QVeris 安装指南:');
+        console.log('  1. mkdir -p ~/.openclaw/skills/qveris/scripts');
+        console.log('  2. curl -fSL https://qveris.ai/skill/SKILL.md -o ~/.openclaw/skills/qveris/SKILL.md');
+        console.log('  3. curl -fSL https://qveris.ai/skill/scripts/qveris_tool.mjs -o ~/.openclaw/skills/qveris/scripts/qveris_tool.mjs');
+        console.log('  4. export QVERIS_API_KEY=your_key_here');
         process.exit(1);
     }
     
@@ -233,6 +379,8 @@ async function main() {
     console.log('\n📋 API配置检查:');
     console.log(`  Brave API: ${CONFIG.brave.apiKey ? '✅ 已配置' : '❌ 未配置'}`);
     console.log(`  Tavily API: ${CONFIG.tavily.apiKey ? '✅ 已配置' : '❌ 未配置'}`);
+    console.log(`  SearXNG: ${CONFIG.searxng.enabled ? `✅ 已配置 (${CONFIG.searxng.endpoint})` : '❌ 未配置 (设置 SEARXNG_ENDPOINT)'}`);
+    console.log(`  QVeris: ${CONFIG.qveris.enabled ? '✅ 已配置 (实时新闻)' : '❌ 未配置 (设置 QVERIS_API_KEY)'}`);
     console.log('');
     
     const results = await multiSearch(query, 5);

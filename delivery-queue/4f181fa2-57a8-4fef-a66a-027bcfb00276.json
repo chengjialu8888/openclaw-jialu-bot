@@ -1,0 +1,16 @@
+{
+  "id": "4f181fa2-57a8-4fef-a66a-027bcfb00276",
+  "enqueuedAt": 1772805301637,
+  "channel": "feishu",
+  "to": "user:ou_369f0eaec993580112c856d1c089f376",
+  "accountId": "default",
+  "payloads": [
+    {
+      "text": "--- **Heartbeat 检查完成 (21:54)** ✅ **Push Queue** - 目录不存在，无待推送消息 ✅ **Cron Triggers** - 目录为空，无触发任务 ✅ **Daily Report** - 今日文件已存在 (2026-03-06.md) ✅ **Dharma Morning** - 当前非 8:00，跳过 ✅ **Sanwan Diary** - 文件不存在，跳过 ✅ **EvoMap** - 无记录 ✅ **Token Tracking** - 非 4 小时记录时段（下次 00:00） ✅ **Memory Maintenance** - 无需清理 无事需要汇报。",
+      "mediaUrls": []
+    }
+  ],
+  "retryCount": 4,
+  "lastAttemptAt": 1772881985051,
+  "lastError": "Request failed with status code 400"
+}

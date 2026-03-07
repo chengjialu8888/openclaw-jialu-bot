@@ -179,8 +179,7 @@
       "dangerouslyDisableDeviceAuth": true
     },
     "auth": {
-      "mode": "token",
-      "token": "411d9ddc-7773-4f20-a9ab-0abdd449c1f9"
+      "mode": "none"
     },
     "trustedProxies": [
       "::1",
