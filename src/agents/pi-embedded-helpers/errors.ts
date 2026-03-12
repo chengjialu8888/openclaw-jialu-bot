@@ -226,9 +226,9 @@ const BILLING_402_PLAN_HINTS = [
   "subscription",
 ] as const;
 
-const PERIODIC_402_HINTS = ["daily", "weekly", "monthly"] as const;
+const PERIODIC_402_HINTS = ["daily", "weekly", "monthly", "rolling"] as const;
 const RETRYABLE_402_RETRY_HINTS = ["try again", "retry", "temporary", "cooldown"] as const;
-const RETRYABLE_402_LIMIT_HINTS = ["usage limit", "rate limit", "organization usage"] as const;
+const RETRYABLE_402_LIMIT_HINTS = ["usage limit", "rate limit", "organization usage", "subscription quota"] as const;
 const RETRYABLE_402_SCOPED_HINTS = ["organization", "workspace"] as const;
 const RETRYABLE_402_SCOPED_RESULT_HINTS = [
   "billing period",
@@ -256,6 +256,11 @@ function hasExplicit402BillingSignal(text: string): boolean {
 }
 
 function hasRetryable402TransientSignal(text: string): boolean {
+  // explicit ZenMux guard: classify any ZenMux 402 response as rate limit
+  if (text.includes("zenmux")) {
+    return true;
+  }
+
   const hasPeriodicHint = includesAnyHint(text, PERIODIC_402_HINTS);
   const hasSpendLimit = text.includes("spend limit") || text.includes("spending limit");
   const hasScopedHint = includesAnyHint(text, RETRYABLE_402_SCOPED_HINTS);
