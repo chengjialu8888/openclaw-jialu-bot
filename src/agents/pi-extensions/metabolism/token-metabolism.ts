@@ -51,14 +51,14 @@ export class TokenMetabolismSystem {
       total: initialBudget,
       allocated: 0,
       reserved: Math.floor(initialBudget * 0.1), // 10% reserved
-      metabolicRate: this.metabolicBaseline
+      metabolicRate: this.metabolicBaseline,
     };
 
     this.state = {
       cognitiveLoad: 0.1,
       informationDensity: 0.5,
       momentum: 0.0,
-      stabilityPeriod: 0
+      stabilityPeriod: 0,
     };
   }
 
@@ -67,8 +67,8 @@ export class TokenMetabolismSystem {
    */
   private calculateMetabolicRate(): number {
     const baseRate = this.metabolicBaseline;
-    const loadMultiplier = 1 + (this.state.cognitiveLoad * 0.5);
-    const densityMultiplier = 1 + (this.state.informationDensity * 0.3);
+    const loadMultiplier = 1 + this.state.cognitiveLoad * 0.5;
+    const densityMultiplier = 1 + this.state.informationDensity * 0.3;
     const momentumMultiplier = 1 + Math.abs(this.state.momentum) * 0.2;
 
     return Math.floor(baseRate * loadMultiplier * densityMultiplier * momentumMultiplier);
@@ -81,7 +81,7 @@ export class TokenMetabolismSystem {
     newCognitiveLoad: number,
     newInformationDensity: number,
     conversationMomentum: number,
-    timeDelta: number
+    timeDelta: number,
   ): void {
     this.state.cognitiveLoad = Math.max(0, Math.min(1, newCognitiveLoad));
     this.state.informationDensity = Math.max(0, Math.min(1, newInformationDensity));
@@ -98,8 +98,7 @@ export class TokenMetabolismSystem {
     const utilizationRatio = this.budget.allocated / (this.budget.total - this.budget.reserved);
     const metabolicPressure = this.budget.metabolicRate / this.metabolicBaseline;
 
-    const shouldPrune = utilizationRatio > this.homeostasisThreshold ||
-                       metabolicPressure > 1.5;
+    const shouldPrune = utilizationRatio > this.homeostasisThreshold || metabolicPressure > 1.5;
 
     let pruneAmount = 0;
     if (shouldPrune) {
@@ -110,15 +109,15 @@ export class TokenMetabolismSystem {
 
     // Calculate segment priorities (simplified)
     const priorities = new Map<string, number>();
-    priorities.set('recent', 0.9);
-    priorities.set('important', 0.8);
-    priorities.set('background', 0.3);
+    priorities.set("recent", 0.9);
+    priorities.set("important", 0.8);
+    priorities.set("background", 0.3);
 
     return {
       shouldPrune,
       pruneAmount,
       priorities,
-      adjustmentFactor: metabolicPressure
+      adjustmentFactor: metabolicPressure,
     };
   }
 
@@ -163,7 +162,7 @@ export class TokenMetabolismSystem {
       cognitiveLoad: 0.1,
       informationDensity: 0.5,
       momentum: 0.0,
-      stabilityPeriod: 0
+      stabilityPeriod: 0,
     };
     this.budget.metabolicRate = this.metabolicBaseline;
   }
