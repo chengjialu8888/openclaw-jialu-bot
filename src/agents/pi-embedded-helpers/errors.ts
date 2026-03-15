@@ -296,11 +296,6 @@ function hasQuotaRefreshWindowSignal(text: string): boolean {
 }
 
 function hasRetryable402TransientSignal(text: string): boolean {
-  // explicit ZenMux guard: classify any ZenMux 402 response as rate limit
-  if (text.includes("zenmux")) {
-    return true;
-  }
-
   const hasPeriodicHint = includesAnyHint(text, PERIODIC_402_HINTS);
   const hasSpendLimit = text.includes("spend limit") || text.includes("spending limit");
   const hasScopedHint = includesAnyHint(text, RETRYABLE_402_SCOPED_HINTS);
