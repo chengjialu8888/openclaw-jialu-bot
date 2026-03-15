@@ -3,12 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import {
-  TokenMetabolismSystem,
-  TokenBudget,
-  MetabolicState,
-  PruningDecision,
-} from "./token-metabolism.js";
+import { TokenMetabolismSystem } from "./token-metabolism.js";
 
 describe("TokenMetabolismSystem", () => {
   let system: TokenMetabolismSystem;
